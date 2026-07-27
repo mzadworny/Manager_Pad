@@ -304,13 +304,13 @@ Install missing shadcn components, build React islands for team and employee CRU
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly against local Supabase
-- [x] 1.2 Tables and policies visible in schema dump
+- [x] 1.1 Migration applies cleanly against local Supabase — 853077e
+- [x] 1.2 Tables and policies visible in schema dump — 853077e
 
 #### Manual
 
-- [x] 1.3 Verify tables and constraints in Supabase Studio
-- [x] 1.4 Verify RLS policies exist for both tables
+- [x] 1.3 Verify tables and constraints in Supabase Studio — 853077e
+- [x] 1.4 Verify RLS policies exist for both tables — 853077e
 
 ### Phase 2: API Layer
 

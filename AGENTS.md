@@ -12,6 +12,21 @@ Manager Pad is a manager 1-on-1 notes web app built on the 10x Astro starter: As
 - Prefer Astro for static UI; React only when interactivity is required. shadcn/ui lives in `src/components/ui/` (new-york).
 - Copy @.env.example to `.env` (Node) or `.dev.vars` (Cloudflare local). Never commit those files. Local Supabase: `npx supabase start` (Docker). Deploy: `npx wrangler deploy`.
 
+## Linear sync
+
+Roadmap sequencing lives in @context/foundation/roadmap.md. Execution board is Linear project **Manager Pad**. Link via `change.md.linear_issue` and the Backlog Handoff **Linear** column. Sync is agent-mediated (Linear MCP) — not automatic:
+
+| Event | Linear state |
+|---|---|
+| Roadmap `ready` / change `new`…`plan_reviewed` | `Todo` |
+| `/10x-plan` → `planned` | comment; keep `Todo` |
+| `/10x-implement` → `implementing` | `In Progress` + comment |
+| Implement complete → `implemented` / `impl_reviewed` | `In Review` + comment |
+| `/10x-archive` / roadmap Done | `Done` + comment |
+| Roadmap `blocked` | `Backlog` + blocker noted in description/comment |
+
+Prefer `linear_issue` in commit `Refs:` lines. Skip Linear updates silently when MCP is unavailable or `linear_issue` is null.
+
 ## Testing
 
 No test runner or `test` script yet. Do not invent a framework without a product decision; CI does not run tests.
