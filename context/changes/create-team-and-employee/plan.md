@@ -316,15 +316,15 @@ Install missing shadcn components, build React islands for team and employee CRU
 
 #### Automated
 
-- [ ] 2.1 Lint passes on new API files
-- [ ] 2.2 Build succeeds
-- [ ] 2.3 Type checking passes
+- [x] 2.1 Lint passes on new API files
+- [x] 2.2 Build succeeds
+- [x] 2.3 Type checking passes
 
 #### Manual
 
-- [ ] 2.4 Teams CRUD works via curl
-- [ ] 2.5 Employees CRUD works via curl
-- [ ] 2.6 Unauthenticated requests return 401
+- [x] 2.4 Teams CRUD works via curl
+- [x] 2.5 Employees CRUD works via curl
+- [x] 2.6 Unauthenticated requests return 401
 
 ### Phase 3: UI Components & Dashboard
 

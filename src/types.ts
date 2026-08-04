@@ -1,0 +1,57 @@
+export interface Team {
+  id: string;
+  managerId: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Employee {
+  id: string;
+  managerId: string;
+  teamId: string;
+  name: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TeamRow {
+  id: string;
+  manager_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmployeeRow {
+  id: string;
+  manager_id: string;
+  team_id: string;
+  name: string;
+  role: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toTeam(row: TeamRow): Team {
+  return {
+    id: row.id,
+    managerId: row.manager_id,
+    name: row.name,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function toEmployee(row: EmployeeRow): Employee {
+  return {
+    id: row.id,
+    managerId: row.manager_id,
+    teamId: row.team_id,
+    name: row.name,
+    role: row.role,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
