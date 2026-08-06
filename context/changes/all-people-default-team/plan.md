@@ -302,12 +302,12 @@ At ~20 reportees (PRD scale), an unfiltered employees GET plus per-filter counts
 
 #### Automated
 
-- [x] 3.1 npm run lint passes
-- [x] 3.2 npm run build passes
+- [x] 3.1 npm run lint passes — f4d26fb
+- [x] 3.2 npm run build passes — f4d26fb
 
 #### Manual
 
-- [x] 3.3 Dashboard defaults to All people without edit/delete controls
-- [x] 3.4 Create under All people and under a filter; visibility rules hold
-- [x] 3.5 Delete filter keeps people under All people
-- [x] 3.6 Reserved-name create fails with clear error
+- [x] 3.3 Dashboard defaults to All people without edit/delete controls — f4d26fb
+- [x] 3.4 Create under All people and under a filter; visibility rules hold — f4d26fb
+- [x] 3.5 Delete filter keeps people under All people — f4d26fb
+- [x] 3.6 Reserved-name create fails with clear error — f4d26fb
