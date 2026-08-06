@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireApiAuth } from "@/lib/api-auth";
-import { toEmployee, type EmployeeRow } from "@/types";
+import { toEmployee, type EmployeeRow, type TeamRow } from "@/types";
 
 export const prerender = false;
 
@@ -10,7 +10,7 @@ const updateEmployeeSchema = z
   .object({
     name: z.string().trim().min(1, "Name is required").optional(),
     role: z.string().trim().optional(),
-    teamId: z.uuid().optional(),
+    teamId: z.uuid().nullable().optional(),
   })
   .refine((value) => value.name !== undefined || value.role !== undefined || value.teamId !== undefined, {
     message: "At least one field is required",
@@ -18,9 +18,15 @@ const updateEmployeeSchema = z
 
 const uuidSchema = z.uuid();
 
-async function teamOwnedByUser(supabase: SupabaseClient, teamId: string): Promise<boolean> {
-  const { data, error } = await supabase.from("teams").select("id").eq("id", teamId).maybeSingle();
-  return !error && data !== null;
+async function getOwnedFilterTeam(
+  supabase: SupabaseClient,
+  teamId: string,
+): Promise<{ team: Pick<TeamRow, "id" | "is_system"> | null; error: PostgrestError | null }> {
+  const result = (await supabase.from("teams").select("id, is_system").eq("id", teamId).maybeSingle()) as {
+    data: Pick<TeamRow, "id" | "is_system"> | null;
+    error: PostgrestError | null;
+  };
+  return { team: result.data, error: result.error };
 }
 
 export const PATCH: APIRoute = async (context) => {
@@ -46,14 +52,23 @@ export const PATCH: APIRoute = async (context) => {
     return Response.json({ error: z.treeifyError(parsed.error) }, { status: 400 });
   }
 
-  if (parsed.data.teamId !== undefined) {
-    const ownsTeam = await teamOwnedByUser(auth.supabase, parsed.data.teamId);
-    if (!ownsTeam) {
+  if (parsed.data.teamId !== undefined && parsed.data.teamId !== null) {
+    const { team, error: teamError } = await getOwnedFilterTeam(auth.supabase, parsed.data.teamId);
+    if (teamError) {
+      return Response.json({ error: teamError.message }, { status: 500 });
+    }
+    if (!team) {
       return Response.json({ error: "Team not found" }, { status: 404 });
+    }
+    if (team.is_system) {
+      return Response.json(
+        { error: "Cannot assign employee to the All people system team; use teamId null instead" },
+        { status: 400 },
+      );
     }
   }
 
-  const updates: Record<string, string> = {};
+  const updates: Record<string, string | null> = {};
   if (parsed.data.name !== undefined) {
     updates.name = parsed.data.name;
   }

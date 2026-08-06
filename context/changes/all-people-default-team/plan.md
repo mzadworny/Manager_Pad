@@ -276,27 +276,27 @@ At ~20 reportees (PRD scale), an unfiltered employees GET plus per-filter counts
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly against local Supabase
-- [x] 1.2 Each backfilled manager has exactly one is_system All people team
-- [x] 1.3 Soft-delete on system team is refused
-- [x] 1.4 Soft-delete on filter team nulls employee team_id then soft-deletes team
+- [x] 1.1 Migration applies cleanly against local Supabase — a696347
+- [x] 1.2 Each backfilled manager has exactly one is_system All people team — a696347
+- [x] 1.3 Soft-delete on system team is refused — a696347
+- [x] 1.4 Soft-delete on filter team nulls employee team_id then soft-deletes team — a696347
 
 #### Manual
 
-- [x] 1.5 Inspect schema/rows in Studio or SQL (is_system, nullable team_id, uniqueness)
+- [x] 1.5 Inspect schema/rows in Studio or SQL (is_system, nullable team_id, uniqueness) — a696347
 
 ### Phase 2: Types & API Contracts
 
 #### Automated
 
-- [ ] 2.1 npm run lint passes
-- [ ] 2.2 npm run build passes
+- [x] 2.1 npm run lint passes
+- [x] 2.2 npm run build passes
 
 #### Manual
 
-- [ ] 2.3 GET /api/teams ensures and returns All people
-- [ ] 2.4 System team PATCH/DELETE and reserved name rejected
-- [ ] 2.5 Employees GET all vs filter; POST null vs system UUID behavior verified
+- [x] 2.3 GET /api/teams ensures and returns All people
+- [x] 2.4 System team PATCH/DELETE and reserved name rejected
+- [x] 2.5 Employees GET all vs filter; POST null vs system UUID behavior verified
 
 ### Phase 3: Dashboard UI
 
