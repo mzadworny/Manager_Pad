@@ -330,14 +330,14 @@ Install missing shadcn components, build React islands for team and employee CRU
 
 #### Automated
 
-- [x] 3.1 Lint passes
-- [x] 3.2 Build succeeds
-- [x] 3.3 All components type-check
+- [x] 3.1 Lint passes — 88e87b9
+- [x] 3.2 Build succeeds — 88e87b9
+- [x] 3.3 All components type-check — 88e87b9
 
 #### Manual
 
-- [ ] 3.4 Empty state shows CTA when no teams exist
-- [ ] 3.5 Team CRUD works via UI dialogs
-- [ ] 3.6 Employee CRUD works via UI dialogs
-- [ ] 3.7 Data persists across page refreshes
-- [ ] 3.8 Data isolation between different user accounts
+- [x] 3.4 Empty state shows CTA when no teams exist — 88e87b9
+- [x] 3.5 Team CRUD works via UI dialogs — 88e87b9
+- [x] 3.6 Employee CRUD works via UI dialogs — 88e87b9
+- [x] 3.7 Data persists across page refreshes — 88e87b9
+- [x] 3.8 Data isolation between different user accounts — 88e87b9

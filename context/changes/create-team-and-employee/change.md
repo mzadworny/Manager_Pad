@@ -1,9 +1,9 @@
 ---
 change_id: create-team-and-employee
 title: Create team and employee
-status: implementing
+status: implemented
 created: 2026-07-24
-updated: 2026-07-27
+updated: 2026-08-06
 archived_at: null
 linear_issue: MAC-5
 ---
