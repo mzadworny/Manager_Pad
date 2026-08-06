@@ -6,11 +6,18 @@ import { Button } from "@/components/ui/button";
 import type { Employee } from "@/types";
 
 interface EmployeeListProps {
-  teamId: string;
+  /** Filter team UUID, or null for All people (unfiltered list/create). */
+  teamId: string | null;
+  /** Selected team row id used for sidebar count updates. */
+  countTeamId: string;
   onCountChange?: (teamId: string, count: number) => void;
 }
 
-export function EmployeeList({ teamId, onCountChange }: EmployeeListProps) {
+function employeesFetchUrl(teamId: string | null): string {
+  return teamId === null ? "/api/employees" : `/api/employees?teamId=${encodeURIComponent(teamId)}`;
+}
+
+export function EmployeeList({ teamId, countTeamId, onCountChange }: EmployeeListProps) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,21 +32,21 @@ export function EmployeeList({ teamId, onCountChange }: EmployeeListProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/employees?teamId=${encodeURIComponent(teamId)}`);
+      const response = await fetch(employeesFetchUrl(teamId));
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { error?: string } | null;
         throw new Error(payload?.error ?? "Unable to load employees");
       }
       const payload = (await response.json()) as { employees: Employee[] };
       setEmployees(payload.employees);
-      onCountChange?.(teamId, payload.employees.length);
+      onCountChange?.(countTeamId, payload.employees.length);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load employees");
-      onCountChange?.(teamId, 0);
+      onCountChange?.(countTeamId, 0);
     } finally {
       setIsLoading(false);
     }
-  }, [onCountChange, teamId]);
+  }, [countTeamId, onCountChange, teamId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -49,7 +56,7 @@ export function EmployeeList({ teamId, onCountChange }: EmployeeListProps) {
   const emptyState = useMemo(
     () => (
       <div className="rounded-lg border border-dashed border-white/20 bg-white/5 p-6 text-center">
-        <p className="text-sm text-blue-100/70">No employees in this team yet.</p>
+        <p className="text-sm text-blue-100/70">No employees yet.</p>
         <Button
           type="button"
           className="mt-4"

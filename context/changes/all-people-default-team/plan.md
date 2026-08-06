@@ -289,25 +289,25 @@ At ~20 reportees (PRD scale), an unfiltered employees GET plus per-filter counts
 
 #### Automated
 
-- [x] 2.1 npm run lint passes
-- [x] 2.2 npm run build passes
+- [x] 2.1 npm run lint passes — bc7ac71
+- [x] 2.2 npm run build passes — bc7ac71
 
 #### Manual
 
-- [x] 2.3 GET /api/teams ensures and returns All people
-- [x] 2.4 System team PATCH/DELETE and reserved name rejected
-- [x] 2.5 Employees GET all vs filter; POST null vs system UUID behavior verified
+- [x] 2.3 GET /api/teams ensures and returns All people — bc7ac71
+- [x] 2.4 System team PATCH/DELETE and reserved name rejected — bc7ac71
+- [x] 2.5 Employees GET all vs filter; POST null vs system UUID behavior verified — bc7ac71
 
 ### Phase 3: Dashboard UI
 
 #### Automated
 
-- [ ] 3.1 npm run lint passes
-- [ ] 3.2 npm run build passes
+- [x] 3.1 npm run lint passes
+- [x] 3.2 npm run build passes
 
 #### Manual
 
-- [ ] 3.3 Dashboard defaults to All people without edit/delete controls
-- [ ] 3.4 Create under All people and under a filter; visibility rules hold
-- [ ] 3.5 Delete filter keeps people under All people
-- [ ] 3.6 Reserved-name create fails with clear error
+- [x] 3.3 Dashboard defaults to All people without edit/delete controls
+- [x] 3.4 Create under All people and under a filter; visibility rules hold
+- [x] 3.5 Delete filter keeps people under All people
+- [x] 3.6 Reserved-name create fails with clear error

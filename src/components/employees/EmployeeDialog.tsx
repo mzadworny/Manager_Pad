@@ -17,7 +17,8 @@ import type { Employee } from "@/types";
 interface EmployeeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  teamId: string;
+  /** Filter team UUID, or null when creating under All people. */
+  teamId: string | null;
   employee?: Employee;
   onSuccess: () => Promise<void>;
 }
@@ -49,12 +50,17 @@ export function EmployeeDialog({ open, onOpenChange, teamId, employee, onSuccess
     try {
       const endpoint = employee ? `/api/employees/${employee.id}` : "/api/employees";
       const method = employee ? "PATCH" : "POST";
+      // Create sets filter context (null = All people). Edit only updates name/role so
+      // editing under All people does not clear an existing filter assignment.
+      const body = employee
+        ? { name: trimmedName, role: trimmedRole }
+        : { name: trimmedName, role: trimmedRole, teamId };
       const response = await fetch(endpoint, {
         method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: trimmedName, role: trimmedRole, teamId }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -85,7 +91,11 @@ export function EmployeeDialog({ open, onOpenChange, teamId, employee, onSuccess
         <DialogHeader>
           <DialogTitle>{employee ? "Edit employee" : "Add employee"}</DialogTitle>
           <DialogDescription>
-            {employee ? "Update the employee details." : "Add a new employee to this team."}
+            {employee
+              ? "Update the employee details."
+              : teamId === null
+                ? "Add a new employee under All people."
+                : "Add a new employee to this filter team."}
           </DialogDescription>
         </DialogHeader>
         {open ? (

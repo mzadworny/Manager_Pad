@@ -9,6 +9,10 @@ import type { Team } from "@/types";
 
 type EmployeeCountByTeamId = Record<string, number>;
 
+function employeesUrlForTeam(team: Team): string {
+  return team.isSystem ? "/api/employees" : `/api/employees?teamId=${encodeURIComponent(team.id)}`;
+}
+
 export function TeamList() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -31,8 +35,8 @@ export function TeamList() {
     });
   }, []);
 
-  const loadEmployeeCount = useCallback(async (teamId: string): Promise<number> => {
-    const response = await fetch(`/api/employees?teamId=${encodeURIComponent(teamId)}`);
+  const loadEmployeeCount = useCallback(async (team: Team): Promise<number> => {
+    const response = await fetch(employeesUrlForTeam(team));
     if (!response.ok) {
       return 0;
     }
@@ -61,12 +65,16 @@ export function TeamList() {
         return;
       }
 
-      setSelectedTeamId((current) =>
-        current && nextTeams.some((team) => team.id === current) ? current : nextTeams[0].id,
-      );
+      setSelectedTeamId((current) => {
+        if (current && nextTeams.some((team) => team.id === current)) {
+          return current;
+        }
+        const systemTeam = nextTeams.find((team) => team.isSystem);
+        return systemTeam?.id ?? nextTeams[0].id;
+      });
 
       const countEntries = await Promise.all(
-        nextTeams.map(async (team) => [team.id, await loadEmployeeCount(team.id)] as const),
+        nextTeams.map(async (team) => [team.id, await loadEmployeeCount(team)] as const),
       );
       setEmployeeCounts(Object.fromEntries(countEntries));
     } catch (err) {
@@ -114,19 +122,8 @@ export function TeamList() {
       ) : teams.length === 0 ? (
         <div className="rounded-lg border border-dashed border-white/20 bg-white/5 p-10 text-center">
           <Building2 className="mx-auto size-10 text-blue-100/60" />
-          <h2 className="mt-4 text-xl font-semibold">Create your first team</h2>
-          <p className="mt-2 text-sm text-blue-100/70">Start by adding a team, then add employees to it.</p>
-          <Button
-            type="button"
-            className="mt-5"
-            onClick={() => {
-              setEditingTeam(undefined);
-              setIsTeamDialogOpen(true);
-            }}
-          >
-            <Plus className="size-4" />
-            Create team
-          </Button>
+          <h2 className="mt-4 text-xl font-semibold">Unable to load teams</h2>
+          <p className="mt-2 text-sm text-blue-100/70">Refresh the page, or try again in a moment.</p>
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
@@ -152,34 +149,36 @@ export function TeamList() {
                         {employeeCounts[team.id] ?? 0} {(employeeCounts[team.id] ?? 0) === 1 ? "employee" : "employees"}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setEditingTeam(team);
-                          setIsTeamDialogOpen(true);
-                        }}
-                        aria-label={`Edit ${team.name}`}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setDeletingTeam(team);
-                          setIsDeleteOpen(true);
-                        }}
-                        aria-label={`Delete ${team.name}`}
-                      >
-                        <Trash2 className="size-4 text-red-300" />
-                      </Button>
-                    </div>
+                    {team.isSystem ? null : (
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setEditingTeam(team);
+                            setIsTeamDialogOpen(true);
+                          }}
+                          aria-label={`Edit ${team.name}`}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setDeletingTeam(team);
+                            setIsDeleteOpen(true);
+                          }}
+                          aria-label={`Delete ${team.name}`}
+                        >
+                          <Trash2 className="size-4 text-red-300" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </button>
               );
@@ -191,9 +190,17 @@ export function TeamList() {
               <>
                 <div className="mb-4">
                   <h2 className="text-xl font-semibold">{selectedTeam.name}</h2>
-                  <p className="text-sm text-blue-100/70">Manage employees in this team.</p>
+                  <p className="text-sm text-blue-100/70">
+                    {selectedTeam.isSystem
+                      ? "Everyone you manage, with or without a filter team."
+                      : "Manage employees in this filter team."}
+                  </p>
                 </div>
-                <EmployeeList teamId={selectedTeam.id} onCountChange={handleEmployeeCountChange} />
+                <EmployeeList
+                  teamId={selectedTeam.isSystem ? null : selectedTeam.id}
+                  countTeamId={selectedTeam.id}
+                  onCountChange={handleEmployeeCountChange}
+                />
               </>
             ) : (
               <p className="text-sm text-blue-100/70">Select a team to view employees.</p>
@@ -216,7 +223,7 @@ export function TeamList() {
           setIsDeleteOpen(nextOpen);
         }}
         title="Delete team?"
-        description="This will soft-delete the team and remove it from your dashboard."
+        description="This removes the filter team. People stay listed under All people."
         onConfirm={async () => {
           if (!deletingTeam) {
             return;
