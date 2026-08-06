@@ -88,54 +88,56 @@ export function EmployeeDialog({ open, onOpenChange, teamId, employee, onSuccess
             {employee ? "Update the employee details." : "Add a new employee to this team."}
           </DialogDescription>
         </DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="employee-name">Name</Label>
-            <Input
-              id="employee-name"
-              name="name"
-              defaultValue={employee?.name ?? ""}
-              placeholder="e.g. Alex Johnson"
-              disabled={isSubmitting}
-              autoFocus
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="employee-role">Role</Label>
-            <Input
-              id="employee-role"
-              name="role"
-              defaultValue={employee?.role ?? ""}
-              placeholder="e.g. Product Manager"
-              disabled={isSubmitting}
-            />
-          </div>
-          {error ? <p className="text-sm text-red-500">{error}</p> : null}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                onOpenChange(false);
-              }}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  Saving...
-                </>
-              ) : employee ? (
-                "Save changes"
-              ) : (
-                "Add employee"
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+        {open ? (
+          <form key={employee?.id ?? "create"} className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <Label htmlFor="employee-name">Name</Label>
+              <Input
+                id="employee-name"
+                name="name"
+                defaultValue={employee?.name ?? ""}
+                placeholder="e.g. Alex Johnson"
+                disabled={isSubmitting}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="employee-role">Role</Label>
+              <Input
+                id="employee-role"
+                name="role"
+                defaultValue={employee?.role ?? ""}
+                placeholder="e.g. Product Manager"
+                disabled={isSubmitting}
+              />
+            </div>
+            {error ? <p className="text-sm text-red-500">{error}</p> : null}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  onOpenChange(false);
+                }}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : employee ? (
+                  "Save changes"
+                ) : (
+                  "Add employee"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

@@ -81,44 +81,46 @@ export function TeamDialog({ open, onOpenChange, team, onSuccess }: TeamDialogPr
             {team ? "Update the name of your team." : "Add a new team to start organizing employees."}
           </DialogDescription>
         </DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="team-name">Team name</Label>
-            <Input
-              id="team-name"
-              name="name"
-              defaultValue={team?.name ?? ""}
-              placeholder="e.g. Engineering"
-              disabled={isSubmitting}
-              autoFocus
-            />
-          </div>
-          {error ? <p className="text-sm text-red-500">{error}</p> : null}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                onOpenChange(false);
-              }}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  Saving...
-                </>
-              ) : team ? (
-                "Save changes"
-              ) : (
-                "Create team"
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+        {open ? (
+          <form key={team?.id ?? "create"} className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <Label htmlFor="team-name">Team name</Label>
+              <Input
+                id="team-name"
+                name="name"
+                defaultValue={team?.name ?? ""}
+                placeholder="e.g. Engineering"
+                disabled={isSubmitting}
+                autoFocus
+              />
+            </div>
+            {error ? <p className="text-sm text-red-500">{error}</p> : null}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  onOpenChange(false);
+                }}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : team ? (
+                  "Save changes"
+                ) : (
+                  "Create team"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        ) : null}
       </DialogContent>
     </Dialog>
   );
