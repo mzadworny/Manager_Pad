@@ -330,9 +330,9 @@ Install missing shadcn components, build React islands for team and employee CRU
 
 #### Automated
 
-- [ ] 3.1 Lint passes
-- [ ] 3.2 Build succeeds
-- [ ] 3.3 All components type-check
+- [x] 3.1 Lint passes
+- [x] 3.2 Build succeeds
+- [x] 3.3 All components type-check
 
 #### Manual
 
