@@ -186,10 +186,10 @@ At ~20 reportees and few filter teams, resolving names from an in-memory teams a
 
 #### Automated
 
-- [x] 2.1 npm run lint passes
-- [x] 2.2 npm run build passes
+- [x] 2.1 npm run lint passes — a8c48f0
+- [x] 2.2 npm run build passes — a8c48f0
 
 #### Manual
 
-- [x] 2.3 All people rows show filter name or No team
-- [x] 2.4 Filter views omit subtitle; labels update after reassign
+- [x] 2.3 All people rows show filter name or No team — a8c48f0
+- [x] 2.4 Filter views omit subtitle; labels update after reassign — a8c48f0
