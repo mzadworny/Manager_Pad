@@ -3,13 +3,15 @@ import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { DeleteDialog } from "@/components/shared/DeleteDialog";
 import { EmployeeDialog } from "@/components/employees/EmployeeDialog";
 import { Button } from "@/components/ui/button";
-import type { Employee } from "@/types";
+import type { Employee, Team } from "@/types";
 
 interface EmployeeListProps {
   /** Filter team UUID, or null for All people (unfiltered list/create). */
   teamId: string | null;
   /** Selected team row id used for sidebar count updates. */
   countTeamId: string;
+  /** Non-system filter teams for the employee dialog Team select. */
+  teams: Team[];
   onCountChange?: (teamId: string, count: number) => void;
 }
 
@@ -17,7 +19,7 @@ function employeesFetchUrl(teamId: string | null): string {
   return teamId === null ? "/api/employees" : `/api/employees?teamId=${encodeURIComponent(teamId)}`;
 }
 
-export function EmployeeList({ teamId, countTeamId, onCountChange }: EmployeeListProps) {
+export function EmployeeList({ teamId, countTeamId, teams, onCountChange }: EmployeeListProps) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -147,6 +149,7 @@ export function EmployeeList({ teamId, countTeamId, onCountChange }: EmployeeLis
           setIsEmployeeDialogOpen(nextOpen);
         }}
         teamId={teamId}
+        teams={teams}
         employee={editingEmployee}
         onSuccess={loadEmployees}
       />

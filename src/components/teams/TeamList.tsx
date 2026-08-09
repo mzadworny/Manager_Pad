@@ -93,6 +93,7 @@ export function TeamList() {
   }, [loadTeams]);
 
   const selectedTeam = useMemo(() => teams.find((team) => team.id === selectedTeamId) ?? null, [selectedTeamId, teams]);
+  const filterTeams = useMemo(() => teams.filter((team) => !team.isSystem), [teams]);
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 rounded-2xl border border-white/10 bg-white/10 p-6 text-white backdrop-blur-xl">
@@ -199,6 +200,7 @@ export function TeamList() {
                 <EmployeeList
                   teamId={selectedTeam.isSystem ? null : selectedTeam.id}
                   countTeamId={selectedTeam.id}
+                  teams={filterTeams}
                   onCountChange={handleEmployeeCountChange}
                 />
               </>
