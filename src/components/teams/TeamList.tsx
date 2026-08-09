@@ -44,6 +44,21 @@ export function TeamList() {
     return payload.employees.length;
   }, []);
 
+  /** Re-fetch sidebar counts for every team after create/edit/delete/reassign. */
+  const refreshEmployeeCounts = useCallback(
+    async (teamList: Team[]) => {
+      const countEntries = await Promise.all(
+        teamList.map(async (team) => [team.id, await loadEmployeeCount(team)] as const),
+      );
+      setEmployeeCounts(Object.fromEntries(countEntries));
+    },
+    [loadEmployeeCount],
+  );
+
+  const handleEmployeesMutated = useCallback(async () => {
+    await refreshEmployeeCounts(teams);
+  }, [refreshEmployeeCounts, teams]);
+
   const loadTeams = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -73,10 +88,7 @@ export function TeamList() {
         return systemTeam?.id ?? nextTeams[0].id;
       });
 
-      const countEntries = await Promise.all(
-        nextTeams.map(async (team) => [team.id, await loadEmployeeCount(team)] as const),
-      );
-      setEmployeeCounts(Object.fromEntries(countEntries));
+      await refreshEmployeeCounts(nextTeams);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load teams");
       setTeams([]);
@@ -85,7 +97,7 @@ export function TeamList() {
     } finally {
       setIsLoading(false);
     }
-  }, [loadEmployeeCount]);
+  }, [refreshEmployeeCounts]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -202,6 +214,7 @@ export function TeamList() {
                   countTeamId={selectedTeam.id}
                   teams={filterTeams}
                   onCountChange={handleEmployeeCountChange}
+                  onEmployeesMutated={handleEmployeesMutated}
                 />
               </>
             ) : (

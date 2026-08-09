@@ -173,23 +173,23 @@ At ~20 reportees and few filter teams, resolving names from an in-memory teams a
 
 #### Automated
 
-- [x] 1.1 npm run lint passes
-- [x] 1.2 npm run build passes
+- [x] 1.1 npm run lint passes — d26077a
+- [x] 1.2 npm run build passes — d26077a
 
 #### Manual
 
-- [x] 1.3 Create defaults and assign via Team select
-- [x] 1.4 Edit reassign updates list membership in place
-- [x] 1.5 All people option maps to teamId null (not system UUID)
+- [x] 1.3 Create defaults and assign via Team select — d26077a
+- [x] 1.4 Edit reassign updates list membership in place — d26077a
+- [x] 1.5 All people option maps to teamId null (not system UUID) — d26077a
 
 ### Phase 2: All People Filter Labels
 
 #### Automated
 
-- [ ] 2.1 npm run lint passes
-- [ ] 2.2 npm run build passes
+- [x] 2.1 npm run lint passes
+- [x] 2.2 npm run build passes
 
 #### Manual
 
-- [ ] 2.3 All people rows show filter name or No team
-- [ ] 2.4 Filter views omit subtitle; labels update after reassign
+- [x] 2.3 All people rows show filter name or No team
+- [x] 2.4 Filter views omit subtitle; labels update after reassign

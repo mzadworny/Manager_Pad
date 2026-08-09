@@ -13,13 +13,15 @@ interface EmployeeListProps {
   /** Non-system filter teams for the employee dialog Team select. */
   teams: Team[];
   onCountChange?: (teamId: string, count: number) => void;
+  /** Refresh all sidebar team counts after create/edit/delete/reassign. */
+  onEmployeesMutated?: () => Promise<void>;
 }
 
 function employeesFetchUrl(teamId: string | null): string {
   return teamId === null ? "/api/employees" : `/api/employees?teamId=${encodeURIComponent(teamId)}`;
 }
 
-export function EmployeeList({ teamId, countTeamId, teams, onCountChange }: EmployeeListProps) {
+export function EmployeeList({ teamId, countTeamId, teams, onCountChange, onEmployeesMutated }: EmployeeListProps) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,10 +52,25 @@ export function EmployeeList({ teamId, countTeamId, teams, onCountChange }: Empl
     }
   }, [countTeamId, onCountChange, teamId]);
 
+  const handleMutationSuccess = useCallback(async () => {
+    await loadEmployees();
+    await onEmployeesMutated?.();
+  }, [loadEmployees, onEmployeesMutated]);
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadEmployees();
   }, [loadEmployees]);
+
+  const showFilterSubtitle = teamId === null;
+  const teamNameById = useMemo(() => new Map(teams.map((team) => [team.id, team.name])), [teams]);
+
+  function filterLabelFor(employee: Employee): string {
+    if (employee.teamId === null) {
+      return "No team";
+    }
+    return teamNameById.get(employee.teamId) ?? "No team";
+  }
 
   const emptyState = useMemo(
     () => (
@@ -111,6 +128,7 @@ export function EmployeeList({ teamId, countTeamId, teams, onCountChange }: Empl
               <div>
                 <p className="font-medium text-white">{employee.name}</p>
                 <p className="text-sm text-blue-100/70">{employee.role}</p>
+                {showFilterSubtitle ? <p className="text-xs text-blue-100/50">{filterLabelFor(employee)}</p> : null}
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -151,7 +169,7 @@ export function EmployeeList({ teamId, countTeamId, teams, onCountChange }: Empl
         teamId={teamId}
         teams={teams}
         employee={editingEmployee}
-        onSuccess={loadEmployees}
+        onSuccess={handleMutationSuccess}
       />
       <DeleteDialog
         open={isDeleteOpen}
@@ -171,7 +189,7 @@ export function EmployeeList({ teamId, countTeamId, teams, onCountChange }: Empl
             const payload = (await response.json().catch(() => null)) as { error?: string } | null;
             throw new Error(payload?.error ?? "Unable to delete employee");
           }
-          await loadEmployees();
+          await handleMutationSuccess();
         }}
       />
     </div>
