@@ -17,6 +17,44 @@ export interface Employee {
   updatedAt: string;
 }
 
+/** TipTap JSON document stored as meeting notes. Never null or `{}`. */
+export interface NotesJson {
+  type: string;
+  content?: unknown[];
+  [key: string]: unknown;
+}
+
+export const EMPTY_NOTES_DOC: NotesJson = {
+  type: "doc",
+  content: [{ type: "paragraph" }],
+};
+
+export type MeetingStatus = "open";
+
+export interface Meeting {
+  id: string;
+  managerId: string;
+  employeeId: string;
+  meetingDate: string;
+  topics: string;
+  notesJson: NotesJson;
+  status: MeetingStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Task {
+  id: string;
+  managerId: string;
+  meetingId: string;
+  employeeId: string;
+  title: string;
+  plannedDate: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface TeamRow {
   id: string;
   manager_id: string;

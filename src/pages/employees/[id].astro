@@ -1,0 +1,14 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { PersonShell } from "@/components/employees/PersonShell";
+
+const employeeId = Astro.params.id ?? "";
+---
+
+<Layout title="Person">
+  <div class="bg-cosmic min-h-screen p-4 md:p-8">
+    <div class="mx-auto w-full max-w-3xl">
+      <PersonShell client:load employeeId={employeeId} />
+    </div>
+  </div>
+</Layout>

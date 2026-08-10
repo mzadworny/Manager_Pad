@@ -31,6 +31,10 @@ Prefer `linear_issue` in commit `Refs:` lines. Skip Linear updates silently when
 
 No test runner or `test` script yet. Do not invent a framework without a product decision; CI does not run tests.
 
+## Planning preference
+
+Prefer **UI-first** implementation phases for product features: interactive shells with local/mock state first (so the manager can click through and give feedback), then schema → API → persistence. See @context/foundation/lessons.md. Pure backend/infra changes may stay schema-first.
+
 ## CI and Pull Requests
 
 @.github/workflows/ci.yml runs on push/PR to `master`: `npm ci` → `npx astro sync` → `npm run lint` → `npm run build` with `SUPABASE_URL` and `SUPABASE_KEY` secrets. PRs must pass that gate.

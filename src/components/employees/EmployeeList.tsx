@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import { ArrowRight, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { DeleteDialog } from "@/components/shared/DeleteDialog";
 import { EmployeeDialog } from "@/components/employees/EmployeeDialog";
 import { Button } from "@/components/ui/button";
@@ -131,6 +131,11 @@ export function EmployeeList({ teamId, countTeamId, teams, onCountChange, onEmpl
                 {showFilterSubtitle ? <p className="text-xs text-blue-100/50">{filterLabelFor(employee)}</p> : null}
               </div>
               <div className="flex items-center gap-2">
+                <Button type="button" variant="ghost" size="icon" asChild>
+                  <a href={`/employees/${employee.id}`} aria-label={`Open ${employee.name}`}>
+                    <ArrowRight className="size-4" />
+                  </a>
+                </Button>
                 <Button
                   type="button"
                   variant="ghost"

@@ -29,6 +29,34 @@ async function getOwnedFilterTeam(
   return { team: result.data, error: result.error };
 }
 
+export const GET: APIRoute = async (context) => {
+  const auth = await requireApiAuth(context);
+  if (!auth.ok) {
+    return auth.response;
+  }
+
+  const idResult = uuidSchema.safeParse(context.params.id);
+  if (!idResult.success) {
+    return Response.json({ error: "Invalid employee id" }, { status: 400 });
+  }
+
+  const result = (await auth.supabase.from("employees").select("*").eq("id", idResult.data).maybeSingle()) as {
+    data: EmployeeRow | null;
+    error: PostgrestError | null;
+  };
+  const { data, error } = result;
+
+  if (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data) {
+    return Response.json({ error: "Employee not found" }, { status: 404 });
+  }
+
+  return Response.json({ employee: toEmployee(data) });
+};
+
 export const PATCH: APIRoute = async (context) => {
   const auth = await requireApiAuth(context);
   if (!auth.ok) {
