@@ -44,9 +44,9 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 ### Environment
 
 - Node.js v22.14.0 (see `.nvmrc`)
-- Env vars: `SUPABASE_URL`, `SUPABASE_KEY` (copy `.env.example` to `.env` for Node, or `.dev.vars` for Cloudflare local dev)
-- Local Supabase: `npx supabase start` (requires Docker)
-- Cloudflare local dev: secrets go in `.dev.vars` (gitignored)
+- Env vars: `SUPABASE_URL` (Project URL) and `SUPABASE_KEY` (anon / publishable key only — never service_role). Put the **same** pair in `.env` and `.dev.vars` (both gitignored). Default is cloud Supabase; see `context/deployment/local-and-preview.md`.
+- Local Supabase (`npx supabase start`, Docker) is optional — only when intentionally pointing env at `http://127.0.0.1:54321`.
+- Cloudflare local dev: Wrangler reads `.dev.vars`
 - Deploy: `npx wrangler deploy` (requires Cloudflare account + `wrangler` auth)
 
 ## CI

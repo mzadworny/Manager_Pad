@@ -117,10 +117,12 @@ No database tables or migrations are required — this project uses Supabase Aut
 
 If you prefer to use a hosted Supabase project, add these variables to your `.env` and `.dev.vars` files:
 
-| Variable       | Description                                                |
-| -------------- | ---------------------------------------------------------- |
-| `SUPABASE_URL` | Project URL from Supabase dashboard → Settings → API       |
-| `SUPABASE_KEY` | `anon` public key from Supabase dashboard → Settings → API |
+| Variable       | Description                                                                 |
+| -------------- | --------------------------------------------------------------------------- |
+| `SUPABASE_URL` | **Project URL** from Supabase → Project Settings → API                      |
+| `SUPABASE_KEY` | **anon** / **publishable** key (same place). Never use service_role/secret |
+
+Do not put Database URL, GraphQL/Edge/Storage URLs, or Storage keys in these files — this app does not use them. Full map: [local-and-preview.md](context/deployment/local-and-preview.md).
 
 ```
 SUPABASE_URL=https://<project-ref>.supabase.co

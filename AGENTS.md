@@ -10,7 +10,7 @@ Manager Pad is a manager 1-on-1 notes web app built on the 10x Astro starter: As
 - New Supabase tables: enable RLS with per-operation, per-role policies. Migrations: `supabase/migrations/YYYYMMDDHHmmss_short_description.sql`.
 - No Next.js directives (`"use client"`). Put shared types in `src/types.ts`, hooks in `src/components/hooks/`, services in `src/lib/`.
 - Prefer Astro for static UI; React only when interactivity is required. shadcn/ui lives in `src/components/ui/` (new-york).
-- Copy @.env.example to `.env` (Node) or `.dev.vars` (Cloudflare local). Never commit those files. Local Supabase: `npx supabase start` (Docker). Deploy: `npx wrangler deploy`.
+- Env: copy @.env.example to **both** `.env` and `.dev.vars` with the same `SUPABASE_URL` + `SUPABASE_KEY`. Never commit those files. Default target is **cloud** Supabase (Project URL + anon/publishable key). Do not start Docker unless `.dev.vars` points at `127.0.0.1` or the user asks for local Supabase. Details: @context/deployment/local-and-preview.md. Deploy: `npx wrangler deploy`.
 
 ## Linear sync
 

@@ -371,24 +371,24 @@ Autosave PATCHes TipTap JSON frequently — keep debounce ≥500ms and avoid re-
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npm run build` passes
-- [x] 1.3 TipTap packages present in `package.json` / lockfile
+- [x] 1.1 `npm run lint` passes — baf826c
+- [x] 1.2 `npm run build` passes — baf826c
+- [x] 1.3 TipTap packages present in `package.json` / lockfile — baf826c
 
 #### Manual
 
-- [x] 1.4 From dashboard, open an employee → person shell shows name and meetings
-- [x] 1.5 Create meeting → meeting page opens with today’s date editable
-- [x] 1.6 Topics, rich-text, and tasks work across reload in the same browser session
-- [x] 1.7 Mobile stacks tasks; desktop shows side panel
-- [x] 1.8 Unauthenticated `/employees` or `/meetings` redirects to sign-in
+- [x] 1.4 From dashboard, open an employee → person shell shows name and meetings — baf826c
+- [x] 1.5 Create meeting → meeting page opens with today’s date editable — baf826c
+- [x] 1.6 Topics, rich-text, and tasks work across reload in the same browser session — baf826c
+- [x] 1.7 Mobile stacks tasks; desktop shows side panel — baf826c
+- [x] 1.8 Unauthenticated `/employees` or `/meetings` redirects to sign-in — baf826c
 
 ### Phase 2: Schema & RLS
 
 #### Automated
 
-- [ ] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate)
-- [ ] 2.2 Dump/studio shows tables, RLS, and RPCs
+- [x] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate)
+- [x] 2.2 Dump/studio shows tables, RLS, and RPCs
 
 #### Manual
 

@@ -19,6 +19,8 @@ pnpm-debug.log*
 
 # cloudflare
 .dev.vars
+.dev.vars.cloud
+.dev.vars.local
 .wrangler/
 
 # macOS-specific files
