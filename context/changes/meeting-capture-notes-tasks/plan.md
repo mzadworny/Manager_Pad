@@ -415,12 +415,12 @@ Autosave PATCHes TipTap JSON frequently — keep debounce ≥500ms and avoid re-
 
 #### Automated
 
-- [x] 4.1 `npm run lint` and `npm run build` pass
-- [x] 4.2 No remaining imports of the mock store
+- [x] 4.1 `npm run lint` and `npm run build` pass — 9fb2a51
+- [x] 4.2 No remaining imports of the mock store — 9fb2a51
 
 #### Manual
 
-- [x] 4.3 Full capture loop persists across reload
-- [x] 4.4 Failed save shows error banner + Retry works
-- [x] 4.5 Soft-delete employee hides cascaded meetings
-- [x] 4.6 Soft-delete meeting hides its tasks
+- [x] 4.3 Full capture loop persists across reload — 9fb2a51
+- [x] 4.4 Failed save shows error banner + Retry works — 9fb2a51
+- [x] 4.5 Soft-delete employee hides cascaded meetings — 9fb2a51
+- [x] 4.6 Soft-delete meeting hides its tasks — 9fb2a51
