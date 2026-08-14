@@ -52,11 +52,11 @@ Four phases, UI-first (project preference in `AGENTS.md` / `lessons.md`):
 
 Pin the **shared domain contract** in Phase 1 so later phases do not drift:
 
-| Entity | Fields (API/UI camelCase) |
-|---|---|
-| Meeting | `id`, `managerId`, `employeeId`, `meetingDate` (YYYY-MM-DD), `topics` (string), `notesJson` (TipTap JSON doc), `status` (`"open"` only in UI), `createdAt`, `updatedAt` |
-| Task | `id`, `managerId`, `meetingId`, `employeeId` (denormalized for S-04), `title`, `plannedDate` (YYYY-MM-DD \| null), `completedAt` (ISO \| null), `createdAt`, `updatedAt` |
-| Empty notes | `{ type: "doc", content: [{ type: "paragraph" }] }` — never `null` / `{}` |
+| Entity      | Fields (API/UI camelCase)                                                                                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Meeting     | `id`, `managerId`, `employeeId`, `meetingDate` (YYYY-MM-DD), `topics` (string), `notesJson` (TipTap JSON doc), `status` (`"open"` only in UI), `createdAt`, `updatedAt`  |
+| Task        | `id`, `managerId`, `meetingId`, `employeeId` (denormalized for S-04), `title`, `plannedDate` (YYYY-MM-DD \| null), `completedAt` (ISO \| null), `createdAt`, `updatedAt` |
+| Empty notes | `{ type: "doc", content: [{ type: "paragraph" }] }` — never `null` / `{}`                                                                                                |
 
 ## Critical Implementation Details
 
@@ -127,6 +127,7 @@ Clickable capture loop with real employee fetch where possible and mock meetings
 **Intent**: Two-column desktop layout: topics + TipTap notes (main); tasks side panel. Stack on small screens (tasks below).
 
 **Contract**:
+
 - Topics: controlled plain textarea bound to mock meeting `topics`
 - Notes: TipTap with StarterKit (headings 1–3, bold, italic, bullet/ordered lists, link) + TaskList/TaskItem; `immediatelyRender: false`; toolbar buttons; persist JSON to mock store on debounce (local “Saved” ok)
 - Meeting date: editable date input writing `meetingDate`
@@ -176,6 +177,7 @@ Add `meetings` and `tasks` with manager RLS, soft-delete, and cascade RPCs align
 **Intent**: Persist meetings and tasks with the same ownership/soft-delete model as employees.
 
 **Contract**:
+
 - `meetings`: `id`, `manager_id` → `auth.users` ON DELETE CASCADE, `employee_id` → `employees(id)` (prefer ON DELETE RESTRICT or no hard cascade — soft-delete via RPC), `meeting_date` (date NOT NULL), `topics` (text NOT NULL DEFAULT `''`), `notes_json` (jsonb NOT NULL DEFAULT empty doc), `status` (text NOT NULL DEFAULT `'open'`), `created_at`, `updated_at`, `deleted_at`
 - `tasks`: `id`, `manager_id`, `meeting_id` → `meetings(id)`, `employee_id` → `employees(id)` (denormalized; set on insert from meeting), `title` (text NOT NULL), `planned_date` (date nullable), `completed_at` (timestamptz nullable), timestamps + `deleted_at`
 - Indexes: `(manager_id, employee_id)`, `(meeting_id)` on tasks; meetings `(manager_id, employee_id)`
@@ -223,6 +225,7 @@ JSON CRUD for meetings and tasks using S-01 status codes and mappers; DTOs alrea
 **Intent**: List/create by employee; get/patch/soft-delete meeting.
 
 **Contract**:
+
 - `GET /api/meetings?employeeId=` → `{ meetings: Meeting[] }` (400 if missing employeeId)
 - `POST /api/meetings` → `{ employeeId, meetingDate? }` → 201 `{ meeting: Meeting }` (default date today, empty topics/notes/status open)
 - `GET /api/meetings/[id]` → `{ meeting: Meeting }` (optional but useful for meeting page SSR/island bootstrap)
@@ -237,6 +240,7 @@ JSON CRUD for meetings and tasks using S-01 status codes and mappers; DTOs alrea
 **Intent**: List/create for a meeting; patch/soft-delete task.
 
 **Contract**:
+
 - `GET /api/tasks?meetingId=` → `{ tasks: Task[] }`
 - `POST /api/tasks` → `{ meetingId, title, plannedDate? }` → 201; server copies `employee_id` / `manager_id` from meeting
 - `PATCH /api/tasks/[id]` → partial `{ title?, plannedDate?, completedAt? }` (`completedAt: null` reopens)
@@ -392,8 +396,8 @@ Autosave PATCHes TipTap JSON frequently — keep debounce ≥500ms and avoid re-
 
 #### Manual
 
-- [ ] 2.3 Second user cannot see first user’s meetings/tasks
-- [ ] 2.4 `soft_delete_employee` cascades to meetings and tasks
+- [x] 2.3 Second user cannot see first user’s meetings/tasks
+- [x] 2.4 `soft_delete_employee` cascades to meetings and tasks
 
 ### Phase 3: API & types
 
