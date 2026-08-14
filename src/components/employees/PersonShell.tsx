@@ -24,6 +24,10 @@ function formatMeetingDate(value: string): string {
   });
 }
 
+function formatMeetingStatus(status: string): string {
+  return status === "completed" ? "Completed" : "Open";
+}
+
 export function PersonShell({ employeeId }: PersonShellProps) {
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -199,7 +203,9 @@ export function PersonShell({ employeeId }: PersonShellProps) {
                       {meeting.topics.trim() ? meeting.topics.trim().slice(0, 80) : "No topics yet"}
                     </p>
                   </div>
-                  <span className="text-xs tracking-wide text-blue-100/50 uppercase">{meeting.status}</span>
+                  <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-medium text-white">
+                    {formatMeetingStatus(meeting.status)}
+                  </span>
                 </a>
               </li>
             ))}

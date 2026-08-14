@@ -20,6 +20,9 @@ import type { NotesJson } from "@/types";
 interface NotesEditorProps {
   initialContent: NotesJson;
   onChange: (content: NotesJson) => void;
+  editable?: boolean;
+  className?: string;
+  minHeightClass?: string;
 }
 
 const NOTES_EXTENSIONS = [
@@ -31,7 +34,9 @@ const NOTES_EXTENSIONS = [
 ];
 
 const EDITOR_CLASS =
-  "min-h-[280px] px-3 py-3 text-sm leading-relaxed text-white outline-none [&_a]:text-sky-300 [&_a]:underline [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul[data-type=taskList]]:list-none [&_ul[data-type=taskList]]:pl-0 [&_ul[data-type=taskList]_li]:flex [&_ul[data-type=taskList]_li]:items-start [&_ul[data-type=taskList]_li]:gap-2";
+  "px-3 py-3 text-sm leading-relaxed text-white outline-none [&_a]:text-sky-300 [&_a]:underline [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul[data-type=taskList]]:list-none [&_ul[data-type=taskList]]:pl-0 [&_ul[data-type=taskList]_li]:flex [&_ul[data-type=taskList]_li]:items-start [&_ul[data-type=taskList]_li]:gap-2";
+
+const DEFAULT_MIN_HEIGHT_CLASS = "min-h-[280px]";
 
 function ToolbarButton({
   active,
@@ -142,7 +147,13 @@ function NotesToolbar({ editor }: { editor: Editor }) {
   );
 }
 
-export function NotesEditor({ initialContent, onChange }: NotesEditorProps) {
+export function NotesEditor({
+  initialContent,
+  onChange,
+  editable = true,
+  className,
+  minHeightClass = DEFAULT_MIN_HEIGHT_CLASS,
+}: NotesEditorProps) {
   const onChangeRef = useRef(onChange);
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -151,10 +162,10 @@ export function NotesEditor({ initialContent, onChange }: NotesEditorProps) {
   const editorProps = useMemo(
     () => ({
       attributes: {
-        class: EDITOR_CLASS,
+        class: cn(EDITOR_CLASS, minHeightClass),
       },
     }),
-    [],
+    [minHeightClass],
   );
 
   // TipTap SSR: immediatelyRender false yields null until mounted; overload is easy to miss under eslint projectService.
@@ -162,6 +173,7 @@ export function NotesEditor({ initialContent, onChange }: NotesEditorProps) {
   const editor = useEditor(
     {
       immediatelyRender: false,
+      editable,
       extensions: NOTES_EXTENSIONS,
       content: initialContent,
       editorProps,
@@ -172,13 +184,20 @@ export function NotesEditor({ initialContent, onChange }: NotesEditorProps) {
     [],
   ) as Editor | null;
 
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    editor.setEditable(editable);
+  }, [editor, editable]);
+
   if (editor === null) {
     return <p className="p-3 text-sm text-blue-100/70">Loading editor...</p>;
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-white/10 bg-white/5">
-      <NotesToolbar editor={editor} />
+    <div className={cn("overflow-hidden rounded-lg border border-white/10 bg-white/5", className)}>
+      {editable ? <NotesToolbar editor={editor} /> : null}
       <EditorContent editor={editor} />
     </div>
   );

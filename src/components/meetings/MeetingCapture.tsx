@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { useMeetingAutosave } from "@/components/hooks/useMeetingAutosave";
 import { NotesEditor } from "@/components/meetings/NotesEditor";
@@ -6,7 +6,20 @@ import { TasksPanel } from "@/components/meetings/TasksPanel";
 import { DeleteDialog } from "@/components/shared/DeleteDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { Employee, Meeting, Task } from "@/types";
+import { EMPTY_NOTES_DOC, type Employee, type Meeting, type NotesJson, type Task } from "@/types";
+
+type CaptureStatus = "open" | "completed";
+
+const WRAP_UP_MIN_HEIGHT_CLASS = "min-h-[160px]";
+
+function FinalizeButton({ status, onToggle }: { status: CaptureStatus; onToggle: () => void }) {
+  const isCompleted = status === "completed";
+  return (
+    <Button type="button" variant={isCompleted ? "secondary" : "default"} onClick={onToggle}>
+      {isCompleted ? "Reopen" : "Mark complete"}
+    </Button>
+  );
+}
 
 interface MeetingCaptureProps {
   meetingId: string;
@@ -21,6 +34,10 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  // Phase 1: complete/reopen/wrap-up are local state only (reload loses them). Phase 3 wires persistence.
+  const [captureStatus, setCaptureStatus] = useState<CaptureStatus>("open");
+  const observationsJsonRef = useRef<NotesJson>(EMPTY_NOTES_DOC);
+  const conclusionsJsonRef = useRef<NotesJson>(EMPTY_NOTES_DOC);
 
   const autosaveInitial = useMemo(
     () =>
@@ -112,6 +129,11 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
   }
 
   const personHref = `/employees/${meeting.employeeId}`;
+  const isCompleted = captureStatus === "completed";
+
+  function handleToggleComplete() {
+    setCaptureStatus((current) => (current === "completed" ? "open" : "completed"));
+  }
 
   return (
     <div className="space-y-6">
@@ -129,6 +151,7 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
               <Input
                 type="date"
                 value={meetingDate}
+                disabled={isCompleted}
                 onChange={(event) => {
                   const value = event.target.value;
                   setMeetingDate(value);
@@ -146,6 +169,10 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
                     ? "Save failed"
                     : "\u00a0"}
             </p>
+            <p className="pb-2 text-sm font-medium text-white">{isCompleted ? "Completed" : "Open"}</p>
+            <div className="pb-0.5">
+              <FinalizeButton status={captureStatus} onToggle={handleToggleComplete} />
+            </div>
           </div>
         </div>
         <Button
@@ -179,6 +206,7 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
             Topics
             <textarea
               value={topics}
+              disabled={isCompleted}
               onChange={(event) => {
                 const value = event.target.value;
                 setTopics(value);
@@ -186,14 +214,43 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
               }}
               rows={4}
               placeholder="Prep topics for this 1-on-1"
-              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 min-h-24 w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-blue-100/40 focus-visible:ring-[3px]"
+              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 min-h-24 w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-blue-100/40 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
             />
           </label>
 
           <div className="space-y-2">
             <p className="text-sm text-blue-100/80">Notes</p>
-            <NotesEditor initialContent={meeting.notesJson} onChange={autosave.setNotesJson} />
+            <NotesEditor initialContent={meeting.notesJson} onChange={autosave.setNotesJson} editable={!isCompleted} />
           </div>
+
+          <section className="space-y-4" aria-labelledby="wrap-up-heading">
+            <h2 id="wrap-up-heading" className="text-lg font-semibold text-white">
+              Wrap-up
+            </h2>
+            <div className="space-y-2">
+              <p className="text-sm text-blue-100/80">Observations</p>
+              <NotesEditor
+                initialContent={EMPTY_NOTES_DOC}
+                onChange={(content) => {
+                  observationsJsonRef.current = content;
+                }}
+                editable={!isCompleted}
+                minHeightClass={WRAP_UP_MIN_HEIGHT_CLASS}
+              />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-blue-100/80">Conclusions</p>
+              <NotesEditor
+                initialContent={EMPTY_NOTES_DOC}
+                onChange={(content) => {
+                  conclusionsJsonRef.current = content;
+                }}
+                editable={!isCompleted}
+                minHeightClass={WRAP_UP_MIN_HEIGHT_CLASS}
+              />
+            </div>
+            <FinalizeButton status={captureStatus} onToggle={handleToggleComplete} />
+          </section>
         </div>
 
         <TasksPanel meetingId={meetingId} tasks={tasks} onChange={setTasks} />
