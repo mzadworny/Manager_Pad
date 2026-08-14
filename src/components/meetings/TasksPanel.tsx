@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createTask, softDeleteTask, updateTask } from "@/lib/meeting-mock-store";
 import type { Task } from "@/types";
 
 interface TasksPanelProps {
@@ -11,67 +10,136 @@ interface TasksPanelProps {
   onChange: (tasks: Task[]) => void;
 }
 
+async function readError(response: Response, fallback: string): Promise<string> {
+  const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+  return payload?.error ?? fallback;
+}
+
 export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
   const [title, setTitle] = useState("");
   const [plannedDate, setPlannedDate] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
 
-  function handleAdd() {
+  async function handleAdd() {
     const trimmed = title.trim();
     if (!trimmed) {
       setError("Title is required");
       return;
     }
-    const created = createTask({
-      meetingId,
-      title: trimmed,
-      plannedDate: plannedDate || null,
-    });
-    if (!created) {
-      setError("Unable to create task");
+    if (isAdding) {
       return;
     }
-    setTitle("");
-    setPlannedDate("");
+    setIsAdding(true);
     setError(null);
-    onChange([...tasks, created]);
-  }
-
-  function handleToggle(task: Task) {
-    const updated = updateTask(task.id, {
-      completedAt: task.completedAt ? null : new Date().toISOString(),
-    });
-    if (!updated) {
-      return;
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          meetingId,
+          title: trimmed,
+          plannedDate: plannedDate || null,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(await readError(response, "Unable to create task"));
+      }
+      const payload = (await response.json()) as { task: Task };
+      setTitle("");
+      setPlannedDate("");
+      onChange([...tasks, payload.task]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create task");
+    } finally {
+      setIsAdding(false);
     }
-    onChange(tasks.map((item) => (item.id === updated.id ? updated : item)));
   }
 
-  function handleTitleBlur(task: Task, nextTitle: string) {
+  async function handleToggle(task: Task) {
+    setPendingId(task.id);
+    setError(null);
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          completedAt: task.completedAt ? null : new Date().toISOString(),
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(await readError(response, "Unable to update task"));
+      }
+      const payload = (await response.json()) as { task: Task };
+      onChange(tasks.map((item) => (item.id === payload.task.id ? payload.task : item)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update task");
+    } finally {
+      setPendingId(null);
+    }
+  }
+
+  async function handleTitleBlur(task: Task, nextTitle: string) {
     const trimmed = nextTitle.trim();
     if (!trimmed || trimmed === task.title) {
       return;
     }
-    const updated = updateTask(task.id, { title: trimmed });
-    if (!updated) {
-      return;
+    setPendingId(task.id);
+    setError(null);
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: trimmed }),
+      });
+      if (!response.ok) {
+        throw new Error(await readError(response, "Unable to update task"));
+      }
+      const payload = (await response.json()) as { task: Task };
+      onChange(tasks.map((item) => (item.id === payload.task.id ? payload.task : item)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update task");
+    } finally {
+      setPendingId(null);
     }
-    onChange(tasks.map((item) => (item.id === updated.id ? updated : item)));
   }
 
-  function handlePlannedDateChange(task: Task, nextDate: string) {
-    const updated = updateTask(task.id, { plannedDate: nextDate || null });
-    if (!updated) {
-      return;
+  async function handlePlannedDateChange(task: Task, nextDate: string) {
+    setPendingId(task.id);
+    setError(null);
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plannedDate: nextDate || null }),
+      });
+      if (!response.ok) {
+        throw new Error(await readError(response, "Unable to update task"));
+      }
+      const payload = (await response.json()) as { task: Task };
+      onChange(tasks.map((item) => (item.id === payload.task.id ? payload.task : item)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update task");
+    } finally {
+      setPendingId(null);
     }
-    onChange(tasks.map((item) => (item.id === updated.id ? updated : item)));
   }
 
-  function handleDelete(taskId: string) {
-    if (!softDeleteTask(taskId)) {
-      return;
+  async function handleDelete(taskId: string) {
+    setPendingId(taskId);
+    setError(null);
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
+      if (!response.ok) {
+        throw new Error(await readError(response, "Unable to delete task"));
+      }
+      onChange(tasks.filter((task) => task.id !== taskId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to delete task");
+    } finally {
+      setPendingId(null);
     }
-    onChange(tasks.filter((task) => task.id !== taskId));
   }
 
   return (
@@ -96,9 +164,9 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
           className="border-white/20 bg-white/5 text-white"
         />
         {error ? <p className="text-xs text-red-400">{error}</p> : null}
-        <Button type="button" className="w-full" onClick={handleAdd}>
+        <Button type="button" className="w-full" onClick={() => void handleAdd()} disabled={isAdding}>
           <Plus className="size-4" />
-          Add task
+          {isAdding ? "Adding..." : "Add task"}
         </Button>
       </div>
 
@@ -112,16 +180,18 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
                 <input
                   type="checkbox"
                   checked={Boolean(task.completedAt)}
+                  disabled={pendingId === task.id}
                   onChange={() => {
-                    handleToggle(task);
+                    void handleToggle(task);
                   }}
                   className="mt-1 size-4 accent-sky-400"
                   aria-label={`Mark ${task.title} ${task.completedAt ? "open" : "done"}`}
                 />
                 <Input
                   defaultValue={task.title}
+                  disabled={pendingId === task.id}
                   onBlur={(event) => {
-                    handleTitleBlur(task, event.target.value);
+                    void handleTitleBlur(task, event.target.value);
                   }}
                   className={`border-white/10 bg-transparent text-white ${task.completedAt ? "line-through opacity-60" : ""}`}
                 />
@@ -130,8 +200,9 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
                   size="icon"
                   variant="ghost"
                   aria-label={`Delete ${task.title}`}
+                  disabled={pendingId === task.id}
                   onClick={() => {
-                    handleDelete(task.id);
+                    void handleDelete(task.id);
                   }}
                 >
                   <Trash2 className="size-4 text-red-300" />
@@ -140,8 +211,9 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
               <Input
                 type="date"
                 value={task.plannedDate ?? ""}
+                disabled={pendingId === task.id}
                 onChange={(event) => {
-                  handlePlannedDateChange(task, event.target.value);
+                  void handlePlannedDateChange(task, event.target.value);
                 }}
                 className="border-white/10 bg-transparent text-white"
               />

@@ -12,7 +12,7 @@ import {
   ListOrdered,
   ListTodo,
 } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { NotesJson } from "@/types";
@@ -21,6 +21,17 @@ interface NotesEditorProps {
   initialContent: NotesJson;
   onChange: (content: NotesJson) => void;
 }
+
+const NOTES_EXTENSIONS = [
+  StarterKit.configure({
+    heading: { levels: [1, 2, 3] },
+  }),
+  TaskList,
+  TaskItem.configure({ nested: true }),
+];
+
+const EDITOR_CLASS =
+  "min-h-[280px] px-3 py-3 text-sm leading-relaxed text-white outline-none [&_a]:text-sky-300 [&_a]:underline [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul[data-type=taskList]]:list-none [&_ul[data-type=taskList]]:pl-0 [&_ul[data-type=taskList]_li]:flex [&_ul[data-type=taskList]_li]:items-start [&_ul[data-type=taskList]_li]:gap-2";
 
 function ToolbarButton({
   active,
@@ -40,6 +51,10 @@ function ToolbarButton({
       variant="ghost"
       aria-label={label}
       aria-pressed={active}
+      onMouseDown={(event) => {
+        // Keep editor selection when using the toolbar.
+        event.preventDefault();
+      }}
       onClick={onClick}
       className={cn("size-8 text-blue-100/80 hover:text-white", active && "bg-white/15 text-white")}
     >
@@ -133,27 +148,29 @@ export function NotesEditor({ initialContent, onChange }: NotesEditorProps) {
     onChangeRef.current = onChange;
   }, [onChange]);
 
-  // TipTap SSR: immediatelyRender false yields null until mounted; overload is easy to miss under eslint projectService.
-  const editor = useEditor({
-    immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
-      }),
-      TaskList,
-      TaskItem.configure({ nested: true }),
-    ],
-    content: initialContent,
-    editorProps: {
+  const editorProps = useMemo(
+    () => ({
       attributes: {
-        class:
-          "min-h-[280px] px-3 py-3 text-sm leading-relaxed text-white outline-none [&_a]:text-sky-300 [&_a]:underline [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:my-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul[data-type=taskList]]:list-none [&_ul[data-type=taskList]]:pl-0 [&_ul[data-type=taskList]_li]:flex [&_ul[data-type=taskList]_li]:items-start [&_ul[data-type=taskList]_li]:gap-2",
+        class: EDITOR_CLASS,
+      },
+    }),
+    [],
+  );
+
+  // TipTap SSR: immediatelyRender false yields null until mounted; overload is easy to miss under eslint projectService.
+  // Stable extensions/editorProps + empty deps avoid setOptions churn that can fight Backspace/Delete mid-edit.
+  const editor = useEditor(
+    {
+      immediatelyRender: false,
+      extensions: NOTES_EXTENSIONS,
+      content: initialContent,
+      editorProps,
+      onUpdate: ({ editor: current }) => {
+        onChangeRef.current(current.getJSON() as NotesJson);
       },
     },
-    onUpdate: ({ editor: current }) => {
-      onChangeRef.current(current.getJSON() as NotesJson);
-    },
-  }) as Editor | null;
+    [],
+  ) as Editor | null;
 
   if (editor === null) {
     return <p className="p-3 text-sm text-blue-100/70">Loading editor...</p>;

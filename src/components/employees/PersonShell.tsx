@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, CalendarPlus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createMeeting, listMeetingsByEmployee } from "@/lib/meeting-mock-store";
 import type { Employee, Meeting } from "@/types";
 
 interface PersonShellProps {
@@ -33,8 +32,14 @@ export function PersonShell({ employeeId }: PersonShellProps) {
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  const refreshMeetings = useCallback(() => {
-    setMeetings(listMeetingsByEmployee(employeeId));
+  const loadMeetings = useCallback(async () => {
+    const response = await fetch(`/api/meetings?employeeId=${encodeURIComponent(employeeId)}`);
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error ?? "Unable to load meetings");
+    }
+    const payload = (await response.json()) as { meetings: Meeting[] };
+    setMeetings(payload.meetings);
   }, [employeeId]);
 
   useEffect(() => {
@@ -54,7 +59,7 @@ export function PersonShell({ employeeId }: PersonShellProps) {
           return;
         }
         setEmployee(payload.employee);
-        setMeetings(listMeetingsByEmployee(employeeId));
+        await loadMeetings();
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Unable to load employee");
@@ -70,22 +75,31 @@ export function PersonShell({ employeeId }: PersonShellProps) {
     return () => {
       cancelled = true;
     };
-  }, [employeeId]);
+  }, [employeeId, loadMeetings]);
 
-  function handleCreateMeeting() {
-    if (!employee || isCreating) {
+  async function handleCreateMeeting() {
+    if (!employee || isCreating || !meetingDate) {
       return;
     }
     setIsCreating(true);
+    setError(null);
     try {
-      const meeting = createMeeting({
-        employeeId: employee.id,
-        managerId: employee.managerId,
-        meetingDate,
+      const response = await fetch("/api/meetings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          employeeId: employee.id,
+          meetingDate,
+        }),
       });
-      refreshMeetings();
-      window.location.href = `/meetings/${meeting.id}`;
-    } finally {
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error ?? "Unable to create meeting");
+      }
+      const payload = (await response.json()) as { meeting: Meeting };
+      window.location.href = `/meetings/${payload.meeting.id}`;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create meeting");
       setIsCreating(false);
     }
   }
@@ -94,10 +108,24 @@ export function PersonShell({ employeeId }: PersonShellProps) {
     return <p className="text-sm text-blue-100/70">Loading person...</p>;
   }
 
-  if (error || !employee) {
+  if (!employee && error) {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-red-400">{error ?? "Employee not found"}</p>
+        <p className="text-sm text-red-400">{error}</p>
+        <Button type="button" variant="secondary" asChild>
+          <a href="/dashboard">
+            <ArrowLeft className="size-4" />
+            Back to dashboard
+          </a>
+        </Button>
+      </div>
+    );
+  }
+
+  if (!employee) {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-red-400">Employee not found</p>
         <Button type="button" variant="secondary" asChild>
           <a href="/dashboard">
             <ArrowLeft className="size-4" />
@@ -125,6 +153,8 @@ export function PersonShell({ employeeId }: PersonShellProps) {
         </div>
       </div>
 
+      {error ? <p className="text-sm text-red-400">{error}</p> : null}
+
       <section className="space-y-4 rounded-lg border border-white/10 bg-white/5 p-4 md:p-6">
         <div className="flex items-center gap-2 text-white">
           <CalendarPlus className="size-5" />
@@ -142,7 +172,7 @@ export function PersonShell({ employeeId }: PersonShellProps) {
               className="border-white/20 bg-white/5 text-white"
             />
           </label>
-          <Button type="button" onClick={handleCreateMeeting} disabled={isCreating || !meetingDate}>
+          <Button type="button" onClick={() => void handleCreateMeeting()} disabled={isCreating || !meetingDate}>
             <Plus className="size-4" />
             {isCreating ? "Creating..." : "Create meeting"}
           </Button>

@@ -122,13 +122,15 @@ export interface TaskRow {
 }
 
 export function toMeeting(row: MeetingRow): Meeting {
+  const notesJson = typeof row.notes_json === "string" ? (JSON.parse(row.notes_json) as NotesJson) : row.notes_json;
+
   return {
     id: row.id,
     managerId: row.manager_id,
     employeeId: row.employee_id,
     meetingDate: row.meeting_date,
     topics: row.topics,
-    notesJson: row.notes_json,
+    notesJson,
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

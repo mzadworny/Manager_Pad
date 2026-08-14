@@ -403,24 +403,24 @@ Autosave PATCHes TipTap JSON frequently — keep debounce ≥500ms and avoid re-
 
 #### Automated
 
-- [x] 3.1 `npm run lint` and `npm run build` pass
-- [x] 3.2 Handlers export `prerender = false` and uppercase methods
+- [x] 3.1 `npm run lint` and `npm run build` pass — f2b8956
+- [x] 3.2 Handlers export `prerender = false` and uppercase methods — f2b8956
 
 #### Manual
 
-- [x] 3.3 Authenticated create/list/delete meeting + task via HTTP
-- [x] 3.4 Unauthenticated requests return 401
+- [x] 3.3 Authenticated create/list/delete meeting + task via HTTP — f2b8956
+- [x] 3.4 Unauthenticated requests return 401 — f2b8956
 
 ### Phase 4: Persist & autosave
 
 #### Automated
 
-- [ ] 4.1 `npm run lint` and `npm run build` pass
-- [ ] 4.2 No remaining imports of the mock store
+- [x] 4.1 `npm run lint` and `npm run build` pass
+- [x] 4.2 No remaining imports of the mock store
 
 #### Manual
 
-- [ ] 4.3 Full capture loop persists across reload
-- [ ] 4.4 Failed save shows error banner + Retry works
-- [ ] 4.5 Soft-delete employee hides cascaded meetings
-- [ ] 4.6 Soft-delete meeting hides its tasks
+- [x] 4.3 Full capture loop persists across reload
+- [x] 4.4 Failed save shows error banner + Retry works
+- [x] 4.5 Soft-delete employee hides cascaded meetings
+- [x] 4.6 Soft-delete meeting hides its tasks

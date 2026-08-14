@@ -1,19 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Trash2 } from "lucide-react";
+import { useMeetingAutosave } from "@/components/hooks/useMeetingAutosave";
 import { NotesEditor } from "@/components/meetings/NotesEditor";
 import { TasksPanel } from "@/components/meetings/TasksPanel";
+import { DeleteDialog } from "@/components/shared/DeleteDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getMeeting, listTasksByMeeting, updateMeeting } from "@/lib/meeting-mock-store";
-import type { Employee, Meeting, NotesJson, Task } from "@/types";
-
-type SaveStatus = "idle" | "saving" | "saved";
+import type { Employee, Meeting, Task } from "@/types";
 
 interface MeetingCaptureProps {
   meetingId: string;
 }
-
-const DEBOUNCE_MS = 600;
 
 export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
   const [meeting, setMeeting] = useState<Meeting | null>(null);
@@ -21,131 +18,89 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [topics, setTopics] = useState("");
   const [meetingDate, setMeetingDate] = useState("");
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  const topicsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const saveClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const markSaved = useCallback(() => {
-    setSaveStatus("saved");
-    if (saveClearTimer.current) {
-      clearTimeout(saveClearTimer.current);
-    }
-    saveClearTimer.current = setTimeout(() => {
-      setSaveStatus("idle");
-    }, 1500);
-  }, []);
-
-  const persistPatch = useCallback(
-    (
-      patch: Partial<Pick<Meeting, "meetingDate" | "topics" | "notesJson">>,
-      delayMs: number,
-      timer: {
-        current: ReturnType<typeof setTimeout> | null;
-      },
-    ) => {
-      if (timer.current) {
-        clearTimeout(timer.current);
-      }
-      setSaveStatus("saving");
-      timer.current = setTimeout(() => {
-        const updated = updateMeeting(meetingId, patch);
-        if (updated) {
-          setMeeting(updated);
-          markSaved();
-        }
-      }, delayMs);
-    },
-    [markSaved, meetingId],
+  const autosaveInitial = useMemo(
+    () =>
+      meeting
+        ? {
+            topics: meeting.topics,
+            meetingDate: meeting.meetingDate,
+            notesJson: meeting.notesJson,
+          }
+        : null,
+    [meeting],
   );
+
+  const autosave = useMeetingAutosave(meetingId, autosaveInitial);
 
   useEffect(() => {
     let cancelled = false;
+    const isActive = () => !cancelled;
 
     async function load() {
       setIsLoading(true);
-      setError(null);
-      const localMeeting = getMeeting(meetingId);
-      if (!localMeeting) {
-        if (!cancelled) {
-          setError("Meeting not found in this browser session");
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      setMeeting(localMeeting);
-      setTopics(localMeeting.topics);
-      setMeetingDate(localMeeting.meetingDate);
-      setTasks(listTasksByMeeting(meetingId));
-
+      setLoadError(null);
       try {
-        const response = await fetch(`/api/employees/${localMeeting.employeeId}`);
-        if (response.ok) {
-          const payload = (await response.json()) as { employee: Employee };
-          if (!cancelled) {
-            setEmployee(payload.employee);
-          }
+        const meetingResponse = await fetch(`/api/meetings/${meetingId}`);
+        if (!meetingResponse.ok) {
+          const payload = (await meetingResponse.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "Meeting not found");
         }
-      } catch {
-        // Person label is optional for the capture shell.
+        const meetingPayload = (await meetingResponse.json()) as { meeting: Meeting };
+        if (!isActive()) {
+          return;
+        }
+
+        setMeeting(meetingPayload.meeting);
+        setTopics(meetingPayload.meeting.topics);
+        setMeetingDate(meetingPayload.meeting.meetingDate);
+
+        const [tasksResponse, employeeResponse] = await Promise.all([
+          fetch(`/api/tasks?meetingId=${encodeURIComponent(meetingId)}`),
+          fetch(`/api/employees/${meetingPayload.meeting.employeeId}`),
+        ]);
+
+        if (!isActive()) {
+          return;
+        }
+
+        if (tasksResponse.ok) {
+          const tasksPayload = (await tasksResponse.json()) as { tasks: Task[] };
+          setTasks(tasksPayload.tasks);
+        }
+
+        if (employeeResponse.ok) {
+          const employeePayload = (await employeeResponse.json()) as { employee: Employee };
+          setEmployee(employeePayload.employee);
+        }
+      } catch (err) {
+        if (isActive()) {
+          setLoadError(err instanceof Error ? err.message : "Unable to load meeting");
+        }
       } finally {
-        if (!cancelled) {
+        if (isActive()) {
           setIsLoading(false);
         }
       }
     }
 
     void load();
-
-    const topicsHandle = topicsTimer;
-    const notesHandle = notesTimer;
-    const dateHandle = dateTimer;
-    const saveClearHandle = saveClearTimer;
-
     return () => {
       cancelled = true;
-      if (topicsHandle.current) {
-        clearTimeout(topicsHandle.current);
-      }
-      if (notesHandle.current) {
-        clearTimeout(notesHandle.current);
-      }
-      if (dateHandle.current) {
-        clearTimeout(dateHandle.current);
-      }
-      if (saveClearHandle.current) {
-        clearTimeout(saveClearHandle.current);
-      }
     };
   }, [meetingId]);
-
-  function handleTopicsChange(value: string) {
-    setTopics(value);
-    persistPatch({ topics: value }, DEBOUNCE_MS, topicsTimer);
-  }
-
-  function handleMeetingDateChange(value: string) {
-    setMeetingDate(value);
-    persistPatch({ meetingDate: value }, DEBOUNCE_MS, dateTimer);
-  }
-
-  function handleNotesChange(content: NotesJson) {
-    persistPatch({ notesJson: content }, DEBOUNCE_MS, notesTimer);
-  }
 
   if (isLoading) {
     return <p className="text-sm text-blue-100/70">Loading meeting...</p>;
   }
 
-  if (error || !meeting) {
+  if (loadError || !meeting) {
     return (
       <div className="space-y-4">
-        <p className="text-sm text-red-400">{error ?? "Meeting not found"}</p>
+        <p className="text-sm text-red-400">{loadError ?? "Meeting not found"}</p>
         <Button type="button" variant="secondary" asChild>
           <a href="/dashboard">
             <ArrowLeft className="size-4" />
@@ -175,17 +130,48 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
                 type="date"
                 value={meetingDate}
                 onChange={(event) => {
-                  handleMeetingDateChange(event.target.value);
+                  const value = event.target.value;
+                  setMeetingDate(value);
+                  autosave.setMeetingDate(value);
                 }}
                 className="w-auto border-white/20 bg-white/5 text-white"
               />
             </label>
             <p className="pb-2 text-xs text-blue-100/50" aria-live="polite">
-              {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved" : "\u00a0"}
+              {autosave.status === "saving"
+                ? "Saving..."
+                : autosave.status === "saved"
+                  ? "Saved"
+                  : autosave.status === "error"
+                    ? "Save failed"
+                    : "\u00a0"}
             </p>
           </div>
         </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Delete meeting"
+          onClick={() => {
+            setIsDeleteOpen(true);
+          }}
+        >
+          <Trash2 className="size-4 text-red-300" />
+        </Button>
       </div>
+
+      {autosave.status === "error" ? (
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-red-400/40 bg-red-950/40 px-4 py-3"
+          role="alert"
+        >
+          <p className="text-sm text-red-300">{autosave.error ?? "Unable to save changes"}</p>
+          <Button type="button" variant="secondary" size="sm" onClick={autosave.retry}>
+            Retry
+          </Button>
+        </div>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-4">
@@ -194,7 +180,9 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
             <textarea
               value={topics}
               onChange={(event) => {
-                handleTopicsChange(event.target.value);
+                const value = event.target.value;
+                setTopics(value);
+                autosave.setTopics(value);
               }}
               rows={4}
               placeholder="Prep topics for this 1-on-1"
@@ -204,12 +192,27 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
 
           <div className="space-y-2">
             <p className="text-sm text-blue-100/80">Notes</p>
-            <NotesEditor initialContent={meeting.notesJson} onChange={handleNotesChange} />
+            <NotesEditor initialContent={meeting.notesJson} onChange={autosave.setNotesJson} />
           </div>
         </div>
 
         <TasksPanel meetingId={meetingId} tasks={tasks} onChange={setTasks} />
       </div>
+
+      <DeleteDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title="Delete meeting?"
+        description="This will soft-delete the meeting and its tasks. You will return to the person page."
+        onConfirm={async () => {
+          const response = await fetch(`/api/meetings/${meetingId}`, { method: "DELETE" });
+          if (!response.ok) {
+            const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+            throw new Error(payload?.error ?? "Unable to delete meeting");
+          }
+          window.location.href = personHref;
+        }}
+      />
     </div>
   );
 }
