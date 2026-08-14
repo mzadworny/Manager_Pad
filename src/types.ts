@@ -96,3 +96,55 @@ export function toEmployee(row: EmployeeRow): Employee {
     updatedAt: row.updated_at,
   };
 }
+
+export interface MeetingRow {
+  id: string;
+  manager_id: string;
+  employee_id: string;
+  meeting_date: string;
+  topics: string;
+  notes_json: NotesJson;
+  status: MeetingStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskRow {
+  id: string;
+  manager_id: string;
+  meeting_id: string;
+  employee_id: string;
+  title: string;
+  planned_date: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toMeeting(row: MeetingRow): Meeting {
+  return {
+    id: row.id,
+    managerId: row.manager_id,
+    employeeId: row.employee_id,
+    meetingDate: row.meeting_date,
+    topics: row.topics,
+    notesJson: row.notes_json,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function toTask(row: TaskRow): Task {
+  return {
+    id: row.id,
+    managerId: row.manager_id,
+    meetingId: row.meeting_id,
+    employeeId: row.employee_id,
+    title: row.title,
+    plannedDate: row.planned_date,
+    completedAt: row.completed_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}

@@ -391,25 +391,25 @@ Autosave PATCHes TipTap JSON frequently — keep debounce ≥500ms and avoid re-
 
 #### Automated
 
-- [x] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate)
-- [x] 2.2 Dump/studio shows tables, RLS, and RPCs
+- [x] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate) — 32c6710
+- [x] 2.2 Dump/studio shows tables, RLS, and RPCs — 32c6710
 
 #### Manual
 
-- [x] 2.3 Second user cannot see first user’s meetings/tasks
-- [x] 2.4 `soft_delete_employee` cascades to meetings and tasks
+- [x] 2.3 Second user cannot see first user’s meetings/tasks — 32c6710
+- [x] 2.4 `soft_delete_employee` cascades to meetings and tasks — 32c6710
 
 ### Phase 3: API & types
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` and `npm run build` pass
-- [ ] 3.2 Handlers export `prerender = false` and uppercase methods
+- [x] 3.1 `npm run lint` and `npm run build` pass
+- [x] 3.2 Handlers export `prerender = false` and uppercase methods
 
 #### Manual
 
-- [ ] 3.3 Authenticated create/list/delete meeting + task via HTTP
-- [ ] 3.4 Unauthenticated requests return 401
+- [x] 3.3 Authenticated create/list/delete meeting + task via HTTP
+- [x] 3.4 Unauthenticated requests return 401
 
 ### Phase 4: Persist & autosave
 
