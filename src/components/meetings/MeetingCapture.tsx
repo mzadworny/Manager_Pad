@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { useMeetingAutosave } from "@/components/hooks/useMeetingAutosave";
 import { NotesEditor } from "@/components/meetings/NotesEditor";
@@ -6,16 +6,22 @@ import { TasksPanel } from "@/components/meetings/TasksPanel";
 import { DeleteDialog } from "@/components/shared/DeleteDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EMPTY_NOTES_DOC, type Employee, type Meeting, type NotesJson, type Task } from "@/types";
-
-type CaptureStatus = "open" | "completed";
+import type { Employee, Meeting, MeetingStatus, Task } from "@/types";
 
 const WRAP_UP_MIN_HEIGHT_CLASS = "min-h-[160px]";
 
-function FinalizeButton({ status, onToggle }: { status: CaptureStatus; onToggle: () => void }) {
+function FinalizeButton({
+  status,
+  disabled,
+  onToggle,
+}: {
+  status: MeetingStatus;
+  disabled?: boolean;
+  onToggle: () => void;
+}) {
   const isCompleted = status === "completed";
   return (
-    <Button type="button" variant={isCompleted ? "secondary" : "default"} onClick={onToggle}>
+    <Button type="button" variant={isCompleted ? "secondary" : "default"} disabled={disabled} onClick={onToggle}>
       {isCompleted ? "Reopen" : "Mark complete"}
     </Button>
   );
@@ -34,10 +40,6 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  // Phase 1: complete/reopen/wrap-up are local state only (reload loses them). Phase 3 wires persistence.
-  const [captureStatus, setCaptureStatus] = useState<CaptureStatus>("open");
-  const observationsJsonRef = useRef<NotesJson>(EMPTY_NOTES_DOC);
-  const conclusionsJsonRef = useRef<NotesJson>(EMPTY_NOTES_DOC);
 
   const autosaveInitial = useMemo(
     () =>
@@ -46,12 +48,16 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
             topics: meeting.topics,
             meetingDate: meeting.meetingDate,
             notesJson: meeting.notesJson,
+            observationsJson: meeting.observationsJson,
+            conclusionsJson: meeting.conclusionsJson,
           }
         : null,
     [meeting],
   );
 
-  const autosave = useMeetingAutosave(meetingId, autosaveInitial);
+  const autosave = useMeetingAutosave(meetingId, autosaveInitial, {
+    frozen: meeting?.status === "completed",
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -129,10 +135,27 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
   }
 
   const personHref = `/employees/${meeting.employeeId}`;
-  const isCompleted = captureStatus === "completed";
+  const isCompleted = meeting.status === "completed";
+  const isSaving = autosave.status === "saving";
 
-  function handleToggleComplete() {
-    setCaptureStatus((current) => (current === "completed" ? "open" : "completed"));
+  async function handleToggleComplete() {
+    if (isSaving) {
+      return;
+    }
+    const nextStatus: MeetingStatus = isCompleted ? "open" : "completed";
+    const result = await autosave.flush(nextStatus);
+    if (result.ok) {
+      setMeeting((current) => (current ? { ...current, status: nextStatus } : current));
+    }
+  }
+
+  async function handleRetry() {
+    const result = await autosave.retry();
+    if (!result.ok || !result.status) {
+      return;
+    }
+    const nextStatus = result.status;
+    setMeeting((current) => (current ? { ...current, status: nextStatus } : current));
   }
 
   return (
@@ -171,7 +194,11 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
             </p>
             <p className="pb-2 text-sm font-medium text-white">{isCompleted ? "Completed" : "Open"}</p>
             <div className="pb-0.5">
-              <FinalizeButton status={captureStatus} onToggle={handleToggleComplete} />
+              <FinalizeButton
+                status={meeting.status}
+                disabled={isSaving}
+                onToggle={() => void handleToggleComplete()}
+              />
             </div>
           </div>
         </div>
@@ -194,7 +221,7 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
           role="alert"
         >
           <p className="text-sm text-red-300">{autosave.error ?? "Unable to save changes"}</p>
-          <Button type="button" variant="secondary" size="sm" onClick={autosave.retry}>
+          <Button type="button" variant="secondary" size="sm" onClick={() => void handleRetry()}>
             Retry
           </Button>
         </div>
@@ -230,10 +257,8 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
             <div className="space-y-2">
               <p className="text-sm text-blue-100/80">Observations</p>
               <NotesEditor
-                initialContent={EMPTY_NOTES_DOC}
-                onChange={(content) => {
-                  observationsJsonRef.current = content;
-                }}
+                initialContent={meeting.observationsJson}
+                onChange={autosave.setObservationsJson}
                 editable={!isCompleted}
                 minHeightClass={WRAP_UP_MIN_HEIGHT_CLASS}
               />
@@ -241,15 +266,13 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
             <div className="space-y-2">
               <p className="text-sm text-blue-100/80">Conclusions</p>
               <NotesEditor
-                initialContent={EMPTY_NOTES_DOC}
-                onChange={(content) => {
-                  conclusionsJsonRef.current = content;
-                }}
+                initialContent={meeting.conclusionsJson}
+                onChange={autosave.setConclusionsJson}
                 editable={!isCompleted}
                 minHeightClass={WRAP_UP_MIN_HEIGHT_CLASS}
               />
             </div>
-            <FinalizeButton status={captureStatus} onToggle={handleToggleComplete} />
+            <FinalizeButton status={meeting.status} disabled={isSaving} onToggle={() => void handleToggleComplete()} />
           </section>
         </div>
 

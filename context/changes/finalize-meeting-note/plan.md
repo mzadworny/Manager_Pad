@@ -317,30 +317,30 @@ Three TipTap instances on one page — acceptable for 1-on-1 length. Keep wrap-u
 
 #### Automated
 
-- [x] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate)
-- [x] 2.2 `npm run lint` and `npm run build` pass
-- [x] 2.3 Handlers still export `prerender = false` and uppercase methods
+- [x] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate) — 091546f
+- [x] 2.2 `npm run lint` and `npm run build` pass — 091546f
+- [x] 2.3 Handlers still export `prerender = false` and uppercase methods — 091546f
 
 #### Manual
 
-- [x] 2.4 Authenticated PATCH `{ status: "completed" }` then GET shows `completed` and empty wrap-up docs
-- [x] 2.5 PATCH content fields while completed returns 409; PATCH `{ status: "open" }` then content PATCH succeeds
-- [x] 2.6 Unauthenticated PATCH still 401
-- [x] 2.7 Studio: CHECK rejects a third status value
+- [x] 2.4 Authenticated PATCH `{ status: "completed" }` then GET shows `completed` and empty wrap-up docs — 091546f
+- [x] 2.5 PATCH content fields while completed returns 409; PATCH `{ status: "open" }` then content PATCH succeeds — 091546f
+- [x] 2.6 Unauthenticated PATCH still 401 — 091546f
+- [x] 2.7 Studio: CHECK rejects a third status value — 091546f
 
 ### Phase 3: Persist, autosave, flush
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` and `npm run build` pass
-- [ ] 3.2 No leftover Phase 1 local-only complete overlay
+- [x] 3.1 `npm run lint` and `npm run build` pass
+- [x] 3.2 No leftover Phase 1 local-only complete overlay
 
 #### Manual
 
-- [ ] 3.3 Full loop: wrap-up Saved → Mark complete → reload frozen and intact
-- [ ] 3.4 Reopen → edit → complete again → reload holds the edit
-- [ ] 3.5 Complete with empty wrap-up allowed; empty docs persist
-- [ ] 3.6 Tasks work while completed; capture fields stay frozen
-- [ ] 3.7 Offline Complete → error + Retry; after Retry, status is completed
-- [ ] 3.8 Person list shows Completed for that meeting; date order unchanged
-- [ ] 3.9 Late typing then immediate Complete does not drop the last characters
+- [x] 3.3 Full loop: wrap-up Saved → Mark complete → reload frozen and intact
+- [x] 3.4 Reopen → edit → complete again → reload holds the edit
+- [x] 3.5 Complete with empty wrap-up allowed; empty docs persist
+- [x] 3.6 Tasks work while completed; capture fields stay frozen
+- [x] 3.7 Offline Complete → error + Retry; after Retry, status is completed
+- [x] 3.8 Person list shows Completed for that meeting; date order unchanged
+- [x] 3.9 Late typing then immediate Complete does not drop the last characters

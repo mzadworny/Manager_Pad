@@ -3,7 +3,7 @@ change_id: finalize-meeting-note
 title: Finalize meeting note
 status: implementing
 created: 2026-08-14
-updated: 2026-08-14
+updated: 2026-08-15
 archived_at: null
 linear_issue: MAC-7
 ---
