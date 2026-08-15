@@ -302,31 +302,31 @@ Three TipTap instances on one page — acceptable for 1-on-1 length. Keep wrap-u
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npm run build` passes
+- [x] 1.1 `npm run lint` passes — a3ece00
+- [x] 1.2 `npm run build` passes — a3ece00
 
 #### Manual
 
-- [x] 1.3 Meeting page shows Observations and Conclusions editors under notes; both header and wrap-up section have Mark complete
-- [x] 1.4 Mark complete freezes date, topics, notes, wrap-up; tasks still add/toggle/delete; both controls become Reopen
-- [x] 1.5 Reopen unlocks those fields again; both controls become Mark complete
-- [x] 1.6 Person list shows Open (not OPEN)
-- [x] 1.7 Reload still loses wrap-up/complete (expected until Phase 3)
+- [x] 1.3 Meeting page shows Observations and Conclusions editors under notes; both header and wrap-up section have Mark complete — a3ece00
+- [x] 1.4 Mark complete freezes date, topics, notes, wrap-up; tasks still add/toggle/delete; both controls become Reopen — a3ece00
+- [x] 1.5 Reopen unlocks those fields again; both controls become Mark complete — a3ece00
+- [x] 1.6 Person list shows Open (not OPEN) — a3ece00
+- [x] 1.7 Reload still loses wrap-up/complete (expected until Phase 3) — a3ece00
 
 ### Phase 2: Schema & API
 
 #### Automated
 
-- [ ] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate)
-- [ ] 2.2 `npm run lint` and `npm run build` pass
-- [ ] 2.3 Handlers still export `prerender = false` and uppercase methods
+- [x] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate)
+- [x] 2.2 `npm run lint` and `npm run build` pass
+- [x] 2.3 Handlers still export `prerender = false` and uppercase methods
 
 #### Manual
 
-- [ ] 2.4 Authenticated PATCH `{ status: "completed" }` then GET shows `completed` and empty wrap-up docs
-- [ ] 2.5 PATCH content fields while completed returns 409; PATCH `{ status: "open" }` then content PATCH succeeds
-- [ ] 2.6 Unauthenticated PATCH still 401
-- [ ] 2.7 Studio: CHECK rejects a third status value
+- [x] 2.4 Authenticated PATCH `{ status: "completed" }` then GET shows `completed` and empty wrap-up docs
+- [x] 2.5 PATCH content fields while completed returns 409; PATCH `{ status: "open" }` then content PATCH succeeds
+- [x] 2.6 Unauthenticated PATCH still 401
+- [x] 2.7 Studio: CHECK rejects a third status value
 
 ### Phase 3: Persist, autosave, flush
 

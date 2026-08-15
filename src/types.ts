@@ -29,7 +29,7 @@ export const EMPTY_NOTES_DOC: NotesJson = {
   content: [{ type: "paragraph" }],
 };
 
-export type MeetingStatus = "open";
+export type MeetingStatus = "open" | "completed";
 
 export interface Meeting {
   id: string;
@@ -38,6 +38,8 @@ export interface Meeting {
   meetingDate: string;
   topics: string;
   notesJson: NotesJson;
+  observationsJson: NotesJson;
+  conclusionsJson: NotesJson;
   status: MeetingStatus;
   createdAt: string;
   updatedAt: string;
@@ -104,6 +106,8 @@ export interface MeetingRow {
   meeting_date: string;
   topics: string;
   notes_json: NotesJson;
+  observations_json: NotesJson;
+  conclusions_json: NotesJson;
   status: MeetingStatus;
   created_at: string;
   updated_at: string;
@@ -121,16 +125,24 @@ export interface TaskRow {
   updated_at: string;
 }
 
-export function toMeeting(row: MeetingRow): Meeting {
-  const notesJson = typeof row.notes_json === "string" ? (JSON.parse(row.notes_json) as NotesJson) : row.notes_json;
+function parseNotesJson(value: NotesJson | string | null | undefined): NotesJson {
+  if (value == null) {
+    return EMPTY_NOTES_DOC;
+  }
 
+  return typeof value === "string" ? (JSON.parse(value) as NotesJson) : value;
+}
+
+export function toMeeting(row: MeetingRow): Meeting {
   return {
     id: row.id,
     managerId: row.manager_id,
     employeeId: row.employee_id,
     meetingDate: row.meeting_date,
     topics: row.topics,
-    notesJson,
+    notesJson: parseNotesJson(row.notes_json),
+    observationsJson: parseNotesJson(row.observations_json),
+    conclusionsJson: parseNotesJson(row.conclusions_json),
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

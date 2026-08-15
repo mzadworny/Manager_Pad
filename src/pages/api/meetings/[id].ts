@@ -17,16 +17,32 @@ const updateMeetingSchema = z
     meetingDate: z.iso.date().optional(),
     topics: z.string().optional(),
     notesJson: notesJsonSchema.optional(),
-    status: z.literal("open").optional(),
+    observationsJson: notesJsonSchema.optional(),
+    conclusionsJson: notesJsonSchema.optional(),
+    status: z.enum(["open", "completed"]).optional(),
   })
   .refine(
     (value) =>
       value.meetingDate !== undefined ||
       value.topics !== undefined ||
       value.notesJson !== undefined ||
+      value.observationsJson !== undefined ||
+      value.conclusionsJson !== undefined ||
       value.status !== undefined,
     { message: "At least one field is required" },
   );
+
+const COMPLETED_WRITE_ERROR = "Meeting is completed; reopen required to edit";
+
+function hasContentWrite(data: z.infer<typeof updateMeetingSchema>): boolean {
+  return (
+    data.meetingDate !== undefined ||
+    data.topics !== undefined ||
+    data.notesJson !== undefined ||
+    data.observationsJson !== undefined ||
+    data.conclusionsJson !== undefined
+  );
+}
 
 export const GET: APIRoute = async (context) => {
   const auth = await requireApiAuth(context);
@@ -79,6 +95,24 @@ export const PATCH: APIRoute = async (context) => {
     return Response.json({ error: z.treeifyError(parsed.error) }, { status: 400 });
   }
 
+  const currentResult = (await auth.supabase
+    .from("meetings")
+    .select("status")
+    .eq("id", idResult.data)
+    .maybeSingle()) as { data: Pick<MeetingRow, "status"> | null; error: PostgrestError | null };
+
+  if (currentResult.error) {
+    return Response.json({ error: currentResult.error.message }, { status: 500 });
+  }
+
+  if (!currentResult.data) {
+    return Response.json({ error: "Meeting not found" }, { status: 404 });
+  }
+
+  if (currentResult.data.status === "completed" && parsed.data.status !== "open" && hasContentWrite(parsed.data)) {
+    return Response.json({ error: COMPLETED_WRITE_ERROR }, { status: 409 });
+  }
+
   const updates: Record<string, string | NotesJson> = {};
   if (parsed.data.meetingDate !== undefined) {
     updates.meeting_date = parsed.data.meetingDate;
@@ -88,6 +122,12 @@ export const PATCH: APIRoute = async (context) => {
   }
   if (parsed.data.notesJson !== undefined) {
     updates.notes_json = parsed.data.notesJson;
+  }
+  if (parsed.data.observationsJson !== undefined) {
+    updates.observations_json = parsed.data.observationsJson;
+  }
+  if (parsed.data.conclusionsJson !== undefined) {
+    updates.conclusions_json = parsed.data.conclusionsJson;
   }
   if (parsed.data.status !== undefined) {
     updates.status = parsed.data.status;
