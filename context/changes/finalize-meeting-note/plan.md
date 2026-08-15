@@ -332,15 +332,15 @@ Three TipTap instances on one page — acceptable for 1-on-1 length. Keep wrap-u
 
 #### Automated
 
-- [x] 3.1 `npm run lint` and `npm run build` pass
-- [x] 3.2 No leftover Phase 1 local-only complete overlay
+- [x] 3.1 `npm run lint` and `npm run build` pass — fa9d163
+- [x] 3.2 No leftover Phase 1 local-only complete overlay — fa9d163
 
 #### Manual
 
-- [x] 3.3 Full loop: wrap-up Saved → Mark complete → reload frozen and intact
-- [x] 3.4 Reopen → edit → complete again → reload holds the edit
-- [x] 3.5 Complete with empty wrap-up allowed; empty docs persist
-- [x] 3.6 Tasks work while completed; capture fields stay frozen
-- [x] 3.7 Offline Complete → error + Retry; after Retry, status is completed
-- [x] 3.8 Person list shows Completed for that meeting; date order unchanged
-- [x] 3.9 Late typing then immediate Complete does not drop the last characters
+- [x] 3.3 Full loop: wrap-up Saved → Mark complete → reload frozen and intact — fa9d163
+- [x] 3.4 Reopen → edit → complete again → reload holds the edit — fa9d163
+- [x] 3.5 Complete with empty wrap-up allowed; empty docs persist — fa9d163
+- [x] 3.6 Tasks work while completed; capture fields stay frozen — fa9d163
+- [x] 3.7 Offline Complete → error + Retry; after Retry, status is completed — fa9d163
+- [x] 3.8 Person list shows Completed for that meeting; date order unchanged — fa9d163
+- [x] 3.9 Late typing then immediate Complete does not drop the last characters — fa9d163

@@ -1,7 +1,7 @@
 ---
 change_id: finalize-meeting-note
 title: Finalize meeting note
-status: implementing
+status: implemented
 created: 2026-08-14
 updated: 2026-08-15
 archived_at: null
