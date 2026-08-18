@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, CalendarPlus, Plus } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
+import { MeetingReadPane } from "@/components/employees/MeetingReadPane";
+import { TasksPanel } from "@/components/meetings/TasksPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { Employee, Meeting } from "@/types";
+import { loadMergedPersonTasks } from "@/lib/person-task-overlay";
+import { cn, formatMeetingDate } from "@/lib/utils";
+import type { Employee, Meeting, Task } from "@/types";
 
 interface PersonShellProps {
   employeeId: string;
@@ -12,38 +16,65 @@ function todayDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function formatMeetingDate(value: string): string {
-  const parsed = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-  return parsed.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+function formatMeetingStatus(status: Meeting["status"]): string {
+  return status === "completed" ? "Completed" : "Open";
 }
 
-function formatMeetingStatus(status: string): string {
-  return status === "completed" ? "Completed" : "Open";
+function replaceMeetingQuery(meetingId: string | null): void {
+  const url = new URL(window.location.href);
+  if (meetingId) {
+    url.searchParams.set("meeting", meetingId);
+  } else {
+    url.searchParams.delete("meeting");
+  }
+  history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function resolveSelectedMeetingId(meetings: Meeting[]): string | null {
+  if (meetings.length === 0) {
+    return null;
+  }
+  const param = new URLSearchParams(window.location.search).get("meeting");
+  if (param && meetings.some((meeting) => meeting.id === param)) {
+    return param;
+  }
+  return meetings[0]?.id ?? null;
 }
 
 export function PersonShell({ employeeId }: PersonShellProps) {
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
   const [meetingDate, setMeetingDate] = useState(todayDate);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  const loadMeetings = useCallback(async () => {
-    const response = await fetch(`/api/meetings?employeeId=${encodeURIComponent(employeeId)}`);
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+  const loadPerson = useCallback(async () => {
+    const employeeResponse = await fetch(`/api/employees/${employeeId}`);
+    if (!employeeResponse.ok) {
+      const payload = (await employeeResponse.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error ?? "Unable to load employee");
+    }
+    const employeePayload = (await employeeResponse.json()) as { employee: Employee };
+
+    const meetingsResponse = await fetch(`/api/meetings?employeeId=${encodeURIComponent(employeeId)}`);
+    if (!meetingsResponse.ok) {
+      const payload = (await meetingsResponse.json().catch(() => null)) as { error?: string } | null;
       throw new Error(payload?.error ?? "Unable to load meetings");
     }
-    const payload = (await response.json()) as { meetings: Meeting[] };
-    setMeetings(payload.meetings);
+    const meetingsPayload = (await meetingsResponse.json()) as { meetings: Meeting[] };
+    const nextMeetings = meetingsPayload.meetings;
+    const nextSelected = resolveSelectedMeetingId(nextMeetings);
+    const nextTasks = await loadMergedPersonTasks(employeeId, nextMeetings);
+
+    return {
+      employee: employeePayload.employee,
+      meetings: nextMeetings,
+      selectedMeetingId: nextSelected,
+      tasks: nextTasks,
+    };
   }, [employeeId]);
 
   useEffect(() => {
@@ -53,17 +84,15 @@ export function PersonShell({ employeeId }: PersonShellProps) {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/employees/${employeeId}`);
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "Unable to load employee");
-        }
-        const payload = (await response.json()) as { employee: Employee };
+        const loaded = await loadPerson();
         if (cancelled) {
           return;
         }
-        setEmployee(payload.employee);
-        await loadMeetings();
+        setEmployee(loaded.employee);
+        setMeetings(loaded.meetings);
+        setSelectedMeetingId(loaded.selectedMeetingId);
+        setTasks(loaded.tasks);
+        replaceMeetingQuery(loaded.selectedMeetingId);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Unable to load employee");
@@ -79,7 +108,12 @@ export function PersonShell({ employeeId }: PersonShellProps) {
     return () => {
       cancelled = true;
     };
-  }, [employeeId, loadMeetings]);
+  }, [loadPerson]);
+
+  function handleSelectMeeting(meetingId: string) {
+    setSelectedMeetingId(meetingId);
+    replaceMeetingQuery(meetingId);
+  }
 
   async function handleCreateMeeting() {
     if (!employee || isCreating || !meetingDate) {
@@ -140,6 +174,8 @@ export function PersonShell({ employeeId }: PersonShellProps) {
     );
   }
 
+  const selectedMeeting = meetings.find((meeting) => meeting.id === selectedMeetingId) ?? null;
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -155,17 +191,8 @@ export function PersonShell({ employeeId }: PersonShellProps) {
             <p className="text-sm text-blue-100/70">{employee.role || "No role"}</p>
           </div>
         </div>
-      </div>
-
-      {error ? <p className="text-sm text-red-400">{error}</p> : null}
-
-      <section className="space-y-4 rounded-lg border border-white/10 bg-white/5 p-4 md:p-6">
-        <div className="flex items-center gap-2 text-white">
-          <CalendarPlus className="size-5" />
-          <h2 className="text-lg font-semibold">New meeting</h2>
-        </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <label className="flex flex-1 flex-col gap-2 text-sm text-blue-100/80">
+          <label className="flex flex-col gap-2 text-sm text-blue-100/80">
             Meeting date
             <Input
               type="date"
@@ -178,40 +205,73 @@ export function PersonShell({ employeeId }: PersonShellProps) {
           </label>
           <Button type="button" onClick={() => void handleCreateMeeting()} disabled={isCreating || !meetingDate}>
             <Plus className="size-4" />
-            {isCreating ? "Creating..." : "Create meeting"}
+            {isCreating ? "Creating..." : "New meeting"}
           </Button>
         </div>
-      </section>
+      </div>
 
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold text-white">Meetings</h2>
-        {meetings.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-white/20 bg-white/5 p-6 text-center">
-            <p className="text-sm text-blue-100/70">No meetings yet. Create one to start notes and tasks.</p>
-          </div>
+      {error ? <p className="text-sm text-red-400">{error}</p> : null}
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_minmax(0,20rem)]">
+        <section className="space-y-3" aria-label="Meetings">
+          <h2 className="text-lg font-semibold text-white">Meetings</h2>
+          {meetings.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-white/20 bg-white/5 p-6 text-center">
+              <p className="text-sm text-blue-100/70">No meetings yet. Create one to start notes.</p>
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {meetings.map((meeting) => {
+                const selected = meeting.id === selectedMeetingId;
+                return (
+                  <li key={meeting.id}>
+                    <button
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => {
+                        handleSelectMeeting(meeting.id);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between gap-2 rounded-lg border p-3 text-left transition-colors",
+                        selected ? "border-sky-400 bg-white/15" : "border-white/10 bg-white/5 hover:bg-white/10",
+                      )}
+                    >
+                      <span className="min-w-0">
+                        <span className="block font-medium text-white">{formatMeetingDate(meeting.meetingDate)}</span>
+                        <span className="block truncate text-xs text-blue-100/70">
+                          {meeting.topics.trim() ? meeting.topics.trim() : "No topics yet"}
+                        </span>
+                      </span>
+                      <span className="shrink-0 rounded-full border border-white/20 bg-white/10 px-2 py-0.5 text-xs font-medium text-white">
+                        {formatMeetingStatus(meeting.status)}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        {selectedMeeting ? (
+          <MeetingReadPane key={selectedMeeting.id} meeting={selectedMeeting} />
         ) : (
-          <ul className="space-y-3">
-            {meetings.map((meeting) => (
-              <li key={meeting.id}>
-                <a
-                  href={`/meetings/${meeting.id}`}
-                  className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/10"
-                >
-                  <div>
-                    <p className="font-medium text-white">{formatMeetingDate(meeting.meetingDate)}</p>
-                    <p className="text-sm text-blue-100/70">
-                      {meeting.topics.trim() ? meeting.topics.trim().slice(0, 80) : "No topics yet"}
-                    </p>
-                  </div>
-                  <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-xs font-medium text-white">
-                    {formatMeetingStatus(meeting.status)}
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          <section
+            className="rounded-lg border border-dashed border-white/20 bg-white/5 p-6"
+            aria-label="Selected meeting"
+          >
+            <p className="text-sm text-blue-100/70">Create a meeting to read topics, notes, and wrap-up here.</p>
+          </section>
         )}
-      </section>
+
+        <TasksPanel
+          employeeId={employee.id}
+          managerId={employee.managerId}
+          meetings={meetings}
+          tasks={tasks}
+          onChange={setTasks}
+        />
+      </div>
     </div>
   );
 }

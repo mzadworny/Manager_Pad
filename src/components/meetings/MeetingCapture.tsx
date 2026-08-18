@@ -6,6 +6,7 @@ import { TasksPanel } from "@/components/meetings/TasksPanel";
 import { DeleteDialog } from "@/components/shared/DeleteDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { filterMeetingFollowupTasks, loadMergedPersonTasks } from "@/lib/person-task-overlay";
 import type { Employee, Meeting, MeetingStatus, Task } from "@/types";
 
 const WRAP_UP_MIN_HEIGHT_CLASS = "min-h-[160px]";
@@ -34,6 +35,7 @@ interface MeetingCaptureProps {
 export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [employee, setEmployee] = useState<Employee | null>(null);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [topics, setTopics] = useState("");
   const [meetingDate, setMeetingDate] = useState("");
@@ -81,24 +83,34 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
         setTopics(meetingPayload.meeting.topics);
         setMeetingDate(meetingPayload.meeting.meetingDate);
 
-        const [tasksResponse, employeeResponse] = await Promise.all([
-          fetch(`/api/tasks?meetingId=${encodeURIComponent(meetingId)}`),
+        const [employeeResponse, meetingsResponse] = await Promise.all([
           fetch(`/api/employees/${meetingPayload.meeting.employeeId}`),
+          fetch(`/api/meetings?employeeId=${encodeURIComponent(meetingPayload.meeting.employeeId)}`),
         ]);
 
         if (!isActive()) {
           return;
         }
 
-        if (tasksResponse.ok) {
-          const tasksPayload = (await tasksResponse.json()) as { tasks: Task[] };
-          setTasks(tasksPayload.tasks);
-        }
-
         if (employeeResponse.ok) {
           const employeePayload = (await employeeResponse.json()) as { employee: Employee };
           setEmployee(employeePayload.employee);
         }
+
+        if (!meetingsResponse.ok) {
+          const payload = (await meetingsResponse.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "Unable to load meetings");
+        }
+
+        const meetingsPayload = (await meetingsResponse.json()) as { meetings: Meeting[] };
+        const nextMeetings = meetingsPayload.meetings;
+        setMeetings(nextMeetings);
+
+        const merged = await loadMergedPersonTasks(meetingPayload.meeting.employeeId, nextMeetings);
+        if (!isActive()) {
+          return;
+        }
+        setTasks(filterMeetingFollowupTasks(merged, meetingId));
       } catch (err) {
         if (isActive()) {
           setLoadError(err instanceof Error ? err.message : "Unable to load meeting");
@@ -276,7 +288,14 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
           </section>
         </div>
 
-        <TasksPanel meetingId={meetingId} tasks={tasks} onChange={setTasks} />
+        <TasksPanel
+          employeeId={meeting.employeeId}
+          managerId={meeting.managerId}
+          meetingId={meetingId}
+          meetings={meetings}
+          tasks={tasks}
+          onChange={setTasks}
+        />
       </div>
 
       <DeleteDialog

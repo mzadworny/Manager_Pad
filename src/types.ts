@@ -29,6 +29,34 @@ export const EMPTY_NOTES_DOC: NotesJson = {
   content: [{ type: "paragraph" }],
 };
 
+function isEmptyParagraph(node: unknown): boolean {
+  if (typeof node !== "object" || node === null) {
+    return false;
+  }
+  const paragraph = node as { type?: string; content?: unknown[] };
+  if (paragraph.type !== "paragraph") {
+    return false;
+  }
+  if (!paragraph.content || paragraph.content.length === 0) {
+    return true;
+  }
+  return paragraph.content.every((child) => {
+    if (typeof child !== "object" || child === null) {
+      return false;
+    }
+    const textNode = child as { type?: string; text?: string };
+    return textNode.type === "text" && !textNode.text?.trim();
+  });
+}
+
+export function isEmptyNotesJson(doc: NotesJson): boolean {
+  const content = doc.content;
+  if (!Array.isArray(content) || content.length === 0) {
+    return true;
+  }
+  return content.every(isEmptyParagraph);
+}
+
 export type MeetingStatus = "open" | "completed";
 
 export interface Meeting {
@@ -48,11 +76,12 @@ export interface Meeting {
 export interface Task {
   id: string;
   managerId: string;
-  meetingId: string;
+  meetingId: string | null;
   employeeId: string;
   title: string;
   plannedDate: string | null;
   completedAt: string | null;
+  completedMeetingId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -158,6 +187,7 @@ export function toTask(row: TaskRow): Task {
     title: row.title,
     plannedDate: row.planned_date,
     completedAt: row.completed_at,
+    completedMeetingId: null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

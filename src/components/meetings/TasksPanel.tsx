@@ -1,11 +1,24 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { Task } from "@/types";
+import {
+  addFloatingPersonTask,
+  deleteFloatingPersonTask,
+  isOverlayTaskId,
+  sortPersonTasks,
+  stampPersonTaskCompletion,
+  updateFloatingPersonTask,
+} from "@/lib/person-task-overlay";
+import { cn, formatMeetingDate } from "@/lib/utils";
+import type { Meeting, Task } from "@/types";
 
 interface TasksPanelProps {
-  meetingId: string;
+  employeeId: string;
+  managerId: string;
+  /** Meeting capture: origin on add, close-stamp on complete. Omit on the person overview. */
+  meetingId?: string;
+  meetings: Meeting[];
   tasks: Task[];
   onChange: (tasks: Task[]) => void;
 }
@@ -15,12 +28,37 @@ async function readError(response: Response, fallback: string): Promise<string> 
   return payload?.error ?? fallback;
 }
 
-export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
+function taskHint(task: Task, meetingsById: Map<string, Meeting>): string | null {
+  if (task.completedMeetingId) {
+    const closedIn = meetingsById.get(task.completedMeetingId);
+    return closedIn ? `Closed in ${formatMeetingDate(closedIn.meetingDate)}` : "Closed in a meeting";
+  }
+  if (task.meetingId) {
+    const origin = meetingsById.get(task.meetingId);
+    return origin ? `From ${formatMeetingDate(origin.meetingDate)}` : null;
+  }
+  return null;
+}
+
+function keepLocalFields(task: Task, payload: Task): Task {
+  return {
+    ...payload,
+    meetingId: payload.meetingId ?? task.meetingId,
+    completedMeetingId: task.completedMeetingId,
+  };
+}
+
+export function TasksPanel({ employeeId, managerId, meetingId, meetings, tasks, onChange }: TasksPanelProps) {
   const [title, setTitle] = useState("");
   const [plannedDate, setPlannedDate] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+
+  const meetingsById = useMemo(() => new Map(meetings.map((meeting) => [meeting.id, meeting])), [meetings]);
+  const openTasks = tasks.filter((task) => task.completedAt == null);
+  const closedTasks = tasks.filter((task) => task.completedAt != null);
+  const showFollowUpSections = Boolean(meetingId);
 
   async function handleAdd() {
     const trimmed = title.trim();
@@ -34,6 +72,18 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
     setIsAdding(true);
     setError(null);
     try {
+      if (!meetingId) {
+        const task = addFloatingPersonTask(employeeId, {
+          managerId,
+          title: trimmed,
+          plannedDate: plannedDate || null,
+        });
+        setTitle("");
+        setPlannedDate("");
+        onChange(sortPersonTasks([...tasks, task]));
+        return;
+      }
+
       const response = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -49,7 +99,7 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
       const payload = (await response.json()) as { task: Task };
       setTitle("");
       setPlannedDate("");
-      onChange([...tasks, payload.task]);
+      onChange(sortPersonTasks([...tasks, { ...payload.task, completedMeetingId: null }]));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to create task");
     } finally {
@@ -58,21 +108,37 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
   }
 
   async function handleToggle(task: Task) {
+    const completing = !task.completedAt;
+    const completedAt = completing ? new Date().toISOString() : null;
+    const completedMeetingId = completing && meetingId ? meetingId : null;
     setPendingId(task.id);
     setError(null);
     try {
+      if (isOverlayTaskId(task.id)) {
+        const updated = updateFloatingPersonTask(employeeId, task.id, { completedAt, completedMeetingId });
+        if (updated) {
+          onChange(sortPersonTasks(tasks.map((item) => (item.id === updated.id ? updated : item))));
+        }
+        return;
+      }
+
       const response = await fetch(`/api/tasks/${task.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          completedAt: task.completedAt ? null : new Date().toISOString(),
-        }),
+        body: JSON.stringify({ completedAt }),
       });
       if (!response.ok) {
         throw new Error(await readError(response, "Unable to update task"));
       }
       const payload = (await response.json()) as { task: Task };
-      onChange(tasks.map((item) => (item.id === payload.task.id ? payload.task : item)));
+      stampPersonTaskCompletion(employeeId, task.id, completing ? { completedMeetingId } : null);
+      onChange(
+        sortPersonTasks(
+          tasks.map((item) =>
+            item.id === payload.task.id ? { ...keepLocalFields(task, payload.task), completedMeetingId } : item,
+          ),
+        ),
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update task");
     } finally {
@@ -88,6 +154,14 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
     setPendingId(task.id);
     setError(null);
     try {
+      if (isOverlayTaskId(task.id)) {
+        const updated = updateFloatingPersonTask(employeeId, task.id, { title: trimmed });
+        if (updated) {
+          onChange(tasks.map((item) => (item.id === updated.id ? updated : item)));
+        }
+        return;
+      }
+
       const response = await fetch(`/api/tasks/${task.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -97,7 +171,7 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
         throw new Error(await readError(response, "Unable to update task"));
       }
       const payload = (await response.json()) as { task: Task };
-      onChange(tasks.map((item) => (item.id === payload.task.id ? payload.task : item)));
+      onChange(tasks.map((item) => (item.id === payload.task.id ? keepLocalFields(task, payload.task) : item)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update task");
     } finally {
@@ -109,6 +183,14 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
     setPendingId(task.id);
     setError(null);
     try {
+      if (isOverlayTaskId(task.id)) {
+        const updated = updateFloatingPersonTask(employeeId, task.id, { plannedDate: nextDate || null });
+        if (updated) {
+          onChange(sortPersonTasks(tasks.map((item) => (item.id === updated.id ? updated : item))));
+        }
+        return;
+      }
+
       const response = await fetch(`/api/tasks/${task.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -118,7 +200,11 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
         throw new Error(await readError(response, "Unable to update task"));
       }
       const payload = (await response.json()) as { task: Task };
-      onChange(tasks.map((item) => (item.id === payload.task.id ? payload.task : item)));
+      onChange(
+        sortPersonTasks(
+          tasks.map((item) => (item.id === payload.task.id ? keepLocalFields(task, payload.task) : item)),
+        ),
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update task");
     } finally {
@@ -130,6 +216,12 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
     setPendingId(taskId);
     setError(null);
     try {
+      if (isOverlayTaskId(taskId)) {
+        deleteFloatingPersonTask(employeeId, taskId);
+        onChange(tasks.filter((task) => task.id !== taskId));
+        return;
+      }
+
       const response = await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
       if (!response.ok) {
         throw new Error(await readError(response, "Unable to delete task"));
@@ -140,6 +232,57 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
     } finally {
       setPendingId(null);
     }
+  }
+
+  function renderTask(task: Task) {
+    const hint = taskHint(task, meetingsById);
+    return (
+      <li key={task.id} className="space-y-2 rounded-md border border-white/10 bg-black/20 p-3">
+        <div className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            checked={Boolean(task.completedAt)}
+            disabled={pendingId === task.id}
+            onChange={() => {
+              void handleToggle(task);
+            }}
+            className="mt-1 size-4 accent-sky-400"
+            aria-label={`Mark ${task.title} ${task.completedAt ? "open" : "done"}`}
+          />
+          <Input
+            key={task.id}
+            defaultValue={task.title}
+            disabled={pendingId === task.id}
+            onBlur={(event) => {
+              void handleTitleBlur(task, event.target.value);
+            }}
+            className={cn("border-white/10 bg-transparent text-white", task.completedAt && "line-through opacity-60")}
+          />
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            aria-label={`Delete ${task.title}`}
+            disabled={pendingId === task.id}
+            onClick={() => {
+              void handleDelete(task.id);
+            }}
+          >
+            <Trash2 className="size-4 text-red-300" />
+          </Button>
+        </div>
+        {hint ? <p className="text-xs text-blue-100/50">{hint}</p> : null}
+        <Input
+          type="date"
+          value={task.plannedDate ?? ""}
+          disabled={pendingId === task.id}
+          onChange={(event) => {
+            void handlePlannedDateChange(task, event.target.value);
+          }}
+          className="border-white/10 bg-transparent text-white"
+        />
+      </li>
+    );
   }
 
   return (
@@ -172,54 +315,23 @@ export function TasksPanel({ meetingId, tasks, onChange }: TasksPanelProps) {
 
       {tasks.length === 0 ? (
         <p className="text-sm text-blue-100/70">No tasks yet.</p>
+      ) : showFollowUpSections ? (
+        <div className="space-y-4">
+          {openTasks.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs font-medium tracking-wide text-blue-100/50 uppercase">Open</p>
+              <ul className="space-y-3">{openTasks.map(renderTask)}</ul>
+            </div>
+          ) : null}
+          {closedTasks.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs font-medium tracking-wide text-blue-100/50 uppercase">Closed in this meeting</p>
+              <ul className="space-y-3">{closedTasks.map(renderTask)}</ul>
+            </div>
+          ) : null}
+        </div>
       ) : (
-        <ul className="space-y-3">
-          {tasks.map((task) => (
-            <li key={task.id} className="space-y-2 rounded-md border border-white/10 bg-black/20 p-3">
-              <div className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  checked={Boolean(task.completedAt)}
-                  disabled={pendingId === task.id}
-                  onChange={() => {
-                    void handleToggle(task);
-                  }}
-                  className="mt-1 size-4 accent-sky-400"
-                  aria-label={`Mark ${task.title} ${task.completedAt ? "open" : "done"}`}
-                />
-                <Input
-                  defaultValue={task.title}
-                  disabled={pendingId === task.id}
-                  onBlur={(event) => {
-                    void handleTitleBlur(task, event.target.value);
-                  }}
-                  className={`border-white/10 bg-transparent text-white ${task.completedAt ? "line-through opacity-60" : ""}`}
-                />
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  aria-label={`Delete ${task.title}`}
-                  disabled={pendingId === task.id}
-                  onClick={() => {
-                    void handleDelete(task.id);
-                  }}
-                >
-                  <Trash2 className="size-4 text-red-300" />
-                </Button>
-              </div>
-              <Input
-                type="date"
-                value={task.plannedDate ?? ""}
-                disabled={pendingId === task.id}
-                onChange={(event) => {
-                  void handlePlannedDateChange(task, event.target.value);
-                }}
-                className="border-white/10 bg-transparent text-white"
-              />
-            </li>
-          ))}
-        </ul>
+        <ul className="space-y-3">{tasks.map(renderTask)}</ul>
       )}
     </aside>
   );

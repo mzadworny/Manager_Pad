@@ -3,7 +3,7 @@ project: Manager Pad
 version: 1
 status: draft
 created: 2026-07-24
-updated: 2026-07-24
+updated: 2026-08-15
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -27,22 +27,22 @@ Managers with ~20 reportees lose track of 1-on-1 commitments spread across unstr
 
 ## At a glance
 
-| ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
-|---|---|---|---|---|---|
-| S-01 | create-team-and-employee | create a team and an employee (name, role, single team) while logged in | existing auth (baseline) | FR-001, FR-002, FR-003 | ready |
-| S-02 | meeting-capture-notes-tasks | create a meeting note, prepare topics, take rich-text notes, add dated tasks in the side panel | S-01 | FR-004, FR-005, FR-006 | proposed |
-| S-03 | finalize-meeting-note | finalize a meeting with observations/conclusions and mark it complete | S-02 | FR-007 | proposed |
-| S-04 | person-overview-task-followup | open a person overview, select meetings, read notes, and mark or add tasks across meetings | S-02, S-03 | US-01, FR-008, FR-009, FR-010 | proposed |
-| S-05 | meeting-voice-notes | record voice notes during a meeting | S-02 | FR-012 | blocked |
+| ID   | Change ID                     | Outcome (user can …)                                                                           | Prerequisites            | PRD refs                      | Status  |
+| ---- | ----------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------ | ----------------------------- | ------- |
+| S-01 | create-team-and-employee      | create a team and an employee (name, role, single team) while logged in                        | existing auth (baseline) | FR-001, FR-002, FR-003        | done    |
+| S-02 | meeting-capture-notes-tasks   | create a meeting note, prepare topics, take rich-text notes, add dated tasks in the side panel | S-01                     | FR-004, FR-005, FR-006        | done    |
+| S-03 | finalize-meeting-note         | finalize a meeting with observations/conclusions and mark it complete                          | S-02                     | FR-007                        | done    |
+| S-04 | person-overview-task-followup | open a person overview, select meetings, read notes, and mark or add tasks across meetings     | S-02, S-03               | US-01, FR-008, FR-009, FR-010 | ready   |
+| S-05 | meeting-voice-notes           | record voice notes during a meeting                                                            | S-02                     | FR-012                        | blocked |
 
 ## Streams
 
 Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme | Chain | Note |
-|---|---|---|---|
-| A | Core 1-on-1 path | `S-01` → `S-02` → `S-03` → `S-04` | Must-have path to Primary Success Criteria under `speed`. |
-| B | Live capture extras | `S-05` | Branches from `S-02`; parallel with `S-03` / `S-04` once scope is confirmed. |
+| Stream | Theme               | Chain                             | Note                                                                         |
+| ------ | ------------------- | --------------------------------- | ---------------------------------------------------------------------------- |
+| A      | Core 1-on-1 path    | `S-01` → `S-02` → `S-03` → `S-04` | Must-have path to Primary Success Criteria under `speed`.                    |
+| B      | Live capture extras | `S-05`                            | Branches from `S-02`; parallel with `S-03` / `S-04` once scope is confirmed. |
 
 ## Baseline
 
@@ -73,7 +73,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Primary Success Criteria step 3 mentions multi-team assignment while FR-003 resolves single team for v1 — treat FR-003 as authoritative for this slice? — Owner: user. Block: no.
 - **Risk:** Sequenced first because every later slice needs employees; introducing the first manager-owned tables here (not in a horizontal foundation) keeps the path vertical under `speed`.
-- **Status:** ready
+- **Status:** done
 
 ### S-02: Meeting capture — notes and tasks
 
@@ -85,7 +85,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** North star — placed as early as Prerequisites allow; autosave NFR must land with note/task edits here or the live-meeting guardrail fails.
-- **Status:** proposed
+- **Status:** done
 
 ### S-03: Finalize meeting note
 
@@ -97,7 +97,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Kept separate from S-02 so capture stays shippable without finalize UI; completed status (not lock) matches FR-007 resolution.
-- **Status:** proposed
+- **Status:** done
 
 ### S-04: Person overview and cross-meeting tasks
 
@@ -109,7 +109,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Delivers the Vision pain (commitments across meetings) one slice after the north star; sequenced after finalize so the Primary Success Criteria end-to-end flow is intact.
-- **Status:** proposed
+- **Status:** ready
 
 ### S-05: Voice notes during meeting
 
@@ -126,13 +126,13 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID | Suggested issue title | Linear | Ready for `/10x-plan` | Notes |
-|---|---|---|---|---|---|
-| S-01 | create-team-and-employee | Manager can create a team and employee | [MAC-5](https://linear.app/maciej-zadworny/issue/MAC-5) | yes | Run `/10x-plan create-team-and-employee` |
-| S-02 | meeting-capture-notes-tasks | Meeting capture: notes + side-panel tasks | [MAC-6](https://linear.app/maciej-zadworny/issue/MAC-6) | no | North star; plan after S-01 |
-| S-03 | finalize-meeting-note | Finalize meeting with observations | [MAC-7](https://linear.app/maciej-zadworny/issue/MAC-7) | no | After S-02 |
-| S-04 | person-overview-task-followup | Person overview + cross-meeting tasks | [MAC-8](https://linear.app/maciej-zadworny/issue/MAC-8) | no | After S-02 + S-03; closes US-01 |
-| S-05 | meeting-voice-notes | Voice notes during meeting | [MAC-9](https://linear.app/maciej-zadworny/issue/MAC-9) | no | Blocked on must-have confirmation |
+| Roadmap ID | Change ID                     | Suggested issue title                     | Linear                                                  | Ready for `/10x-plan` | Notes                                         |
+| ---------- | ----------------------------- | ----------------------------------------- | ------------------------------------------------------- | --------------------- | --------------------------------------------- |
+| S-01       | create-team-and-employee      | Manager can create a team and employee    | [MAC-5](https://linear.app/maciej-zadworny/issue/MAC-5) | no                    | Implemented                                   |
+| S-02       | meeting-capture-notes-tasks   | Meeting capture: notes + side-panel tasks | [MAC-6](https://linear.app/maciej-zadworny/issue/MAC-6) | no                    | Implemented (north star)                      |
+| S-03       | finalize-meeting-note         | Finalize meeting with observations        | [MAC-7](https://linear.app/maciej-zadworny/issue/MAC-7) | no                    | Implemented                                   |
+| S-04       | person-overview-task-followup | Person overview + cross-meeting tasks     | [MAC-8](https://linear.app/maciej-zadworny/issue/MAC-8) | yes                   | Run `/10x-plan person-overview-task-followup` |
+| S-05       | meeting-voice-notes           | Voice notes during meeting                | [MAC-9](https://linear.app/maciej-zadworny/issue/MAC-9) | no                    | Blocked on must-have confirmation             |
 
 Linear project: [Manager Pad](https://linear.app/maciej-zadworny/project/manager-pad-20207118e177). Sequencing stays in this file; board status is agent-synced via MCP (see `AGENTS.md` → Linear sync).
 
