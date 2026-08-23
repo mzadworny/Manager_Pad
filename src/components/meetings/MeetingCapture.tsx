@@ -6,7 +6,6 @@ import { TasksPanel } from "@/components/meetings/TasksPanel";
 import { DeleteDialog } from "@/components/shared/DeleteDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { filterMeetingFollowupTasks, loadMergedPersonTasks } from "@/lib/person-task-overlay";
 import type { Employee, Meeting, MeetingStatus, Task } from "@/types";
 
 const WRAP_UP_MIN_HEIGHT_CLASS = "min-h-[160px]";
@@ -83,9 +82,10 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
         setTopics(meetingPayload.meeting.topics);
         setMeetingDate(meetingPayload.meeting.meetingDate);
 
-        const [employeeResponse, meetingsResponse] = await Promise.all([
+        const [employeeResponse, meetingsResponse, tasksResponse] = await Promise.all([
           fetch(`/api/employees/${meetingPayload.meeting.employeeId}`),
           fetch(`/api/meetings?employeeId=${encodeURIComponent(meetingPayload.meeting.employeeId)}`),
+          fetch(`/api/tasks?meetingId=${encodeURIComponent(meetingId)}`),
         ]);
 
         if (!isActive()) {
@@ -101,16 +101,15 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
           const payload = (await meetingsResponse.json().catch(() => null)) as { error?: string } | null;
           throw new Error(payload?.error ?? "Unable to load meetings");
         }
+        if (!tasksResponse.ok) {
+          const payload = (await tasksResponse.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "Unable to load tasks");
+        }
 
         const meetingsPayload = (await meetingsResponse.json()) as { meetings: Meeting[] };
-        const nextMeetings = meetingsPayload.meetings;
-        setMeetings(nextMeetings);
-
-        const merged = await loadMergedPersonTasks(meetingPayload.meeting.employeeId, nextMeetings);
-        if (!isActive()) {
-          return;
-        }
-        setTasks(filterMeetingFollowupTasks(merged, meetingId));
+        const tasksPayload = (await tasksResponse.json()) as { tasks: Task[] };
+        setMeetings(meetingsPayload.meetings);
+        setTasks(tasksPayload.tasks);
       } catch (err) {
         if (isActive()) {
           setLoadError(err instanceof Error ? err.message : "Unable to load meeting");
@@ -290,7 +289,6 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
 
         <TasksPanel
           employeeId={meeting.employeeId}
-          managerId={meeting.managerId}
           meetingId={meetingId}
           meetings={meetings}
           tasks={tasks}

@@ -4,7 +4,6 @@ import { MeetingReadPane } from "@/components/employees/MeetingReadPane";
 import { TasksPanel } from "@/components/meetings/TasksPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { loadMergedPersonTasks } from "@/lib/person-task-overlay";
 import { cn, formatMeetingDate } from "@/lib/utils";
 import type { Employee, Meeting, Task } from "@/types";
 
@@ -52,28 +51,35 @@ export function PersonShell({ employeeId }: PersonShellProps) {
   const [isCreating, setIsCreating] = useState(false);
 
   const loadPerson = useCallback(async () => {
-    const employeeResponse = await fetch(`/api/employees/${employeeId}`);
+    const [employeeResponse, meetingsResponse, tasksResponse] = await Promise.all([
+      fetch(`/api/employees/${employeeId}`),
+      fetch(`/api/meetings?employeeId=${encodeURIComponent(employeeId)}`),
+      fetch(`/api/tasks?employeeId=${encodeURIComponent(employeeId)}`),
+    ]);
+
     if (!employeeResponse.ok) {
       const payload = (await employeeResponse.json().catch(() => null)) as { error?: string } | null;
       throw new Error(payload?.error ?? "Unable to load employee");
     }
-    const employeePayload = (await employeeResponse.json()) as { employee: Employee };
-
-    const meetingsResponse = await fetch(`/api/meetings?employeeId=${encodeURIComponent(employeeId)}`);
     if (!meetingsResponse.ok) {
       const payload = (await meetingsResponse.json().catch(() => null)) as { error?: string } | null;
       throw new Error(payload?.error ?? "Unable to load meetings");
     }
+    if (!tasksResponse.ok) {
+      const payload = (await tasksResponse.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error ?? "Unable to load tasks");
+    }
+
+    const employeePayload = (await employeeResponse.json()) as { employee: Employee };
     const meetingsPayload = (await meetingsResponse.json()) as { meetings: Meeting[] };
+    const tasksPayload = (await tasksResponse.json()) as { tasks: Task[] };
     const nextMeetings = meetingsPayload.meetings;
-    const nextSelected = resolveSelectedMeetingId(nextMeetings);
-    const nextTasks = await loadMergedPersonTasks(employeeId, nextMeetings);
 
     return {
       employee: employeePayload.employee,
       meetings: nextMeetings,
-      selectedMeetingId: nextSelected,
-      tasks: nextTasks,
+      selectedMeetingId: resolveSelectedMeetingId(nextMeetings),
+      tasks: tasksPayload.tasks,
     };
   }, [employeeId]);
 
@@ -264,13 +270,7 @@ export function PersonShell({ employeeId }: PersonShellProps) {
           </section>
         )}
 
-        <TasksPanel
-          employeeId={employee.id}
-          managerId={employee.managerId}
-          meetings={meetings}
-          tasks={tasks}
-          onChange={setTasks}
-        />
+        <TasksPanel employeeId={employee.id} meetings={meetings} tasks={tasks} onChange={setTasks} />
       </div>
     </div>
   );

@@ -2,20 +2,11 @@ import { useMemo, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  addFloatingPersonTask,
-  deleteFloatingPersonTask,
-  isOverlayTaskId,
-  sortPersonTasks,
-  stampPersonTaskCompletion,
-  updateFloatingPersonTask,
-} from "@/lib/person-task-overlay";
 import { cn, formatMeetingDate } from "@/lib/utils";
 import type { Meeting, Task } from "@/types";
 
 interface TasksPanelProps {
   employeeId: string;
-  managerId: string;
   /** Meeting capture: origin on add, close-stamp on complete. Omit on the person overview. */
   meetingId?: string;
   meetings: Meeting[];
@@ -26,6 +17,22 @@ interface TasksPanelProps {
 async function readError(response: Response, fallback: string): Promise<string> {
   const payload = (await response.json().catch(() => null)) as { error?: string } | null;
   return payload?.error ?? fallback;
+}
+
+function sortPersonTasks(tasks: Task[]): Task[] {
+  return [...tasks].sort((a, b) => {
+    const aDone = a.completedAt ? 1 : 0;
+    const bDone = b.completedAt ? 1 : 0;
+    if (aDone !== bDone) {
+      return aDone - bDone;
+    }
+    const aPlanned = a.plannedDate ?? "9999-12-31";
+    const bPlanned = b.plannedDate ?? "9999-12-31";
+    if (aPlanned !== bPlanned) {
+      return aPlanned.localeCompare(bPlanned);
+    }
+    return a.createdAt.localeCompare(b.createdAt);
+  });
 }
 
 function taskHint(task: Task, meetingsById: Map<string, Meeting>): string | null {
@@ -40,15 +47,7 @@ function taskHint(task: Task, meetingsById: Map<string, Meeting>): string | null
   return null;
 }
 
-function keepLocalFields(task: Task, payload: Task): Task {
-  return {
-    ...payload,
-    meetingId: payload.meetingId ?? task.meetingId,
-    completedMeetingId: task.completedMeetingId,
-  };
-}
-
-export function TasksPanel({ employeeId, managerId, meetingId, meetings, tasks, onChange }: TasksPanelProps) {
+export function TasksPanel({ employeeId, meetingId, meetings, tasks, onChange }: TasksPanelProps) {
   const [title, setTitle] = useState("");
   const [plannedDate, setPlannedDate] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -72,25 +71,13 @@ export function TasksPanel({ employeeId, managerId, meetingId, meetings, tasks, 
     setIsAdding(true);
     setError(null);
     try {
-      if (!meetingId) {
-        const task = addFloatingPersonTask(employeeId, {
-          managerId,
-          title: trimmed,
-          plannedDate: plannedDate || null,
-        });
-        setTitle("");
-        setPlannedDate("");
-        onChange(sortPersonTasks([...tasks, task]));
-        return;
-      }
-
       const response = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          meetingId,
           title: trimmed,
           plannedDate: plannedDate || null,
+          ...(meetingId ? { meetingId } : { employeeId }),
         }),
       });
       if (!response.ok) {
@@ -99,7 +86,7 @@ export function TasksPanel({ employeeId, managerId, meetingId, meetings, tasks, 
       const payload = (await response.json()) as { task: Task };
       setTitle("");
       setPlannedDate("");
-      onChange(sortPersonTasks([...tasks, { ...payload.task, completedMeetingId: null }]));
+      onChange(sortPersonTasks([...tasks, payload.task]));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to create task");
     } finally {
@@ -110,35 +97,23 @@ export function TasksPanel({ employeeId, managerId, meetingId, meetings, tasks, 
   async function handleToggle(task: Task) {
     const completing = !task.completedAt;
     const completedAt = completing ? new Date().toISOString() : null;
-    const completedMeetingId = completing && meetingId ? meetingId : null;
+    const body: { completedAt: string | null; completedMeetingId?: string } = { completedAt };
+    if (completing && meetingId) {
+      body.completedMeetingId = meetingId;
+    }
     setPendingId(task.id);
     setError(null);
     try {
-      if (isOverlayTaskId(task.id)) {
-        const updated = updateFloatingPersonTask(employeeId, task.id, { completedAt, completedMeetingId });
-        if (updated) {
-          onChange(sortPersonTasks(tasks.map((item) => (item.id === updated.id ? updated : item))));
-        }
-        return;
-      }
-
       const response = await fetch(`/api/tasks/${task.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completedAt }),
+        body: JSON.stringify(body),
       });
       if (!response.ok) {
         throw new Error(await readError(response, "Unable to update task"));
       }
       const payload = (await response.json()) as { task: Task };
-      stampPersonTaskCompletion(employeeId, task.id, completing ? { completedMeetingId } : null);
-      onChange(
-        sortPersonTasks(
-          tasks.map((item) =>
-            item.id === payload.task.id ? { ...keepLocalFields(task, payload.task), completedMeetingId } : item,
-          ),
-        ),
-      );
+      onChange(sortPersonTasks(tasks.map((item) => (item.id === payload.task.id ? payload.task : item))));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update task");
     } finally {
@@ -154,14 +129,6 @@ export function TasksPanel({ employeeId, managerId, meetingId, meetings, tasks, 
     setPendingId(task.id);
     setError(null);
     try {
-      if (isOverlayTaskId(task.id)) {
-        const updated = updateFloatingPersonTask(employeeId, task.id, { title: trimmed });
-        if (updated) {
-          onChange(tasks.map((item) => (item.id === updated.id ? updated : item)));
-        }
-        return;
-      }
-
       const response = await fetch(`/api/tasks/${task.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -171,7 +138,7 @@ export function TasksPanel({ employeeId, managerId, meetingId, meetings, tasks, 
         throw new Error(await readError(response, "Unable to update task"));
       }
       const payload = (await response.json()) as { task: Task };
-      onChange(tasks.map((item) => (item.id === payload.task.id ? keepLocalFields(task, payload.task) : item)));
+      onChange(tasks.map((item) => (item.id === payload.task.id ? payload.task : item)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update task");
     } finally {
@@ -183,14 +150,6 @@ export function TasksPanel({ employeeId, managerId, meetingId, meetings, tasks, 
     setPendingId(task.id);
     setError(null);
     try {
-      if (isOverlayTaskId(task.id)) {
-        const updated = updateFloatingPersonTask(employeeId, task.id, { plannedDate: nextDate || null });
-        if (updated) {
-          onChange(sortPersonTasks(tasks.map((item) => (item.id === updated.id ? updated : item))));
-        }
-        return;
-      }
-
       const response = await fetch(`/api/tasks/${task.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -200,11 +159,7 @@ export function TasksPanel({ employeeId, managerId, meetingId, meetings, tasks, 
         throw new Error(await readError(response, "Unable to update task"));
       }
       const payload = (await response.json()) as { task: Task };
-      onChange(
-        sortPersonTasks(
-          tasks.map((item) => (item.id === payload.task.id ? keepLocalFields(task, payload.task) : item)),
-        ),
-      );
+      onChange(sortPersonTasks(tasks.map((item) => (item.id === payload.task.id ? payload.task : item))));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update task");
     } finally {
@@ -216,12 +171,6 @@ export function TasksPanel({ employeeId, managerId, meetingId, meetings, tasks, 
     setPendingId(taskId);
     setError(null);
     try {
-      if (isOverlayTaskId(taskId)) {
-        deleteFloatingPersonTask(employeeId, taskId);
-        onChange(tasks.filter((task) => task.id !== taskId));
-        return;
-      }
-
       const response = await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
       if (!response.ok) {
         throw new Error(await readError(response, "Unable to delete task"));

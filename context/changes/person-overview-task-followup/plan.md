@@ -400,32 +400,32 @@ Both surfaces use the Phase 2 APIs as the only source of truth. Overlay and N+1 
 
 #### Automated
 
-- [x] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate)
-- [x] 2.2 `npm run lint` and `npm run build` pass
-- [x] 2.3 Handlers still export `prerender = false` and uppercase methods
+- [x] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate) — 9db7277
+- [x] 2.2 `npm run lint` and `npm run build` pass — 9db7277
+- [x] 2.3 Handlers still export `prerender = false` and uppercase methods — 9db7277
 
 #### Manual
 
-- [x] 2.4 `GET /api/tasks?employeeId=` returns floating + origin tasks; `GET ?meetingId=` returns open-for-employee + closed-here only
-- [x] 2.5 `POST` with `employeeId` only creates `meetingId: null`; `POST` with `meetingId` still copies employee
-- [x] 2.6 PATCH complete from a meeting with stamp; GET meeting list shows it as closed-here; PATCH `{ completedAt: null }` clears stamp
-- [x] 2.7 PATCH `{ completedAt }` without `completedMeetingId` leaves stamp null
-- [x] 2.8 Unauthenticated GET/POST/PATCH still 401
-- [x] 2.9 Soft-delete a meeting: origin tasks disappear; a floating task closed in that meeting remains on employee GET with `completedMeetingId` null
+- [x] 2.4 `GET /api/tasks?employeeId=` returns floating + origin tasks; `GET ?meetingId=` returns open-for-employee + closed-here only — 9db7277
+- [x] 2.5 `POST` with `employeeId` only creates `meetingId: null`; `POST` with `meetingId` still copies employee — 9db7277
+- [x] 2.6 PATCH complete from a meeting with stamp; GET meeting list shows it as closed-here; PATCH `{ completedAt: null }` clears stamp — 9db7277
+- [x] 2.7 PATCH `{ completedAt }` without `completedMeetingId` leaves stamp null — 9db7277
+- [x] 2.8 Unauthenticated GET/POST/PATCH still 401 — 9db7277
+- [x] 2.9 Soft-delete a meeting: origin tasks disappear; a floating task closed in that meeting remains on employee GET with `completedMeetingId` null — 9db7277
 
 ### Phase 3: Persist & wire-up
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` and `npm run build` pass
-- [ ] 3.2 No remaining imports of the overlay module
+- [x] 3.1 `npm run lint` and `npm run build` pass
+- [x] 3.2 No remaining imports of the overlay module
 
 #### Manual
 
-- [ ] 3.3 Full loop: floating add → reload → complete in a meeting → reload both surfaces
-- [ ] 3.4 Overview mark-done stays unstamped and is not closed-here on any meeting
-- [ ] 3.5 Uncomplete on the meeting page returns the task to the open list on both surfaces
-- [ ] 3.6 Newest default + `?meeting=` work; expand boxes read-only; Open meeting edits on capture
-- [ ] 3.7 Create meeting still lands on capture; completed meeting still allows task toggle
-- [ ] 3.8 Soft-delete meeting removes origin tasks only; floating tasks remain
-- [ ] 3.9 Overlay-only Phase 1 rows are gone after reload
+- [x] 3.3 Full loop: floating add → reload → complete in a meeting → reload both surfaces
+- [x] 3.4 Overview mark-done stays unstamped and is not closed-here on any meeting
+- [x] 3.5 Uncomplete on the meeting page returns the task to the open list on both surfaces
+- [x] 3.6 Newest default + `?meeting=` work; expand boxes read-only; Open meeting edits on capture
+- [x] 3.7 Create meeting still lands on capture; completed meeting still allows task toggle
+- [x] 3.8 Soft-delete meeting removes origin tasks only; floating tasks remain
+- [x] 3.9 Overlay-only Phase 1 rows are gone after reload
