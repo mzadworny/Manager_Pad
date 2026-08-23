@@ -145,11 +145,12 @@ export interface MeetingRow {
 export interface TaskRow {
   id: string;
   manager_id: string;
-  meeting_id: string;
+  meeting_id: string | null;
   employee_id: string;
   title: string;
   planned_date: string | null;
   completed_at: string | null;
+  completed_meeting_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -187,7 +188,7 @@ export function toTask(row: TaskRow): Task {
     title: row.title,
     plannedDate: row.planned_date,
     completedAt: row.completed_at,
-    completedMeetingId: null,
+    completedMeetingId: row.completed_meeting_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

@@ -13,10 +13,18 @@ const updateTaskSchema = z
     title: z.string().trim().min(1, "Title is required").optional(),
     plannedDate: z.iso.date().nullable().optional(),
     completedAt: z.iso.datetime().nullable().optional(),
+    completedMeetingId: z.uuid().nullable().optional(),
   })
-  .refine((value) => value.title !== undefined || value.plannedDate !== undefined || value.completedAt !== undefined, {
-    message: "At least one field is required",
-  });
+  .refine(
+    (value) =>
+      value.title !== undefined ||
+      value.plannedDate !== undefined ||
+      value.completedAt !== undefined ||
+      value.completedMeetingId !== undefined,
+    {
+      message: "At least one field is required",
+    },
+  );
 
 export const PATCH: APIRoute = async (context) => {
   const auth = await requireApiAuth(context);
@@ -48,16 +56,22 @@ export const PATCH: APIRoute = async (context) => {
   if (parsed.data.plannedDate !== undefined) {
     updates.planned_date = parsed.data.plannedDate;
   }
+  // completedMeetingId is only honored when completedAt is also provided and non-null
+  // (uncomplete always clears the stamp; overview omits the key so a null stamp stays null).
   if (parsed.data.completedAt !== undefined) {
     updates.completed_at = parsed.data.completedAt;
+    if (parsed.data.completedAt === null) {
+      updates.completed_meeting_id = null;
+    } else if (parsed.data.completedMeetingId !== undefined) {
+      updates.completed_meeting_id = parsed.data.completedMeetingId;
+    }
   }
 
-  const result = (await auth.supabase
-    .from("tasks")
-    .update(updates)
-    .eq("id", idResult.data)
-    .select("*")
-    .maybeSingle()) as { data: TaskRow | null; error: PostgrestError | null };
+  const result = (
+    Object.keys(updates).length === 0
+      ? await auth.supabase.from("tasks").select("*").eq("id", idResult.data).maybeSingle()
+      : await auth.supabase.from("tasks").update(updates).eq("id", idResult.data).select("*").maybeSingle()
+  ) as { data: TaskRow | null; error: PostgrestError | null };
   const { data, error } = result;
 
   if (error) {

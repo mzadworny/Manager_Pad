@@ -384,34 +384,34 @@ Both surfaces use the Phase 2 APIs as the only source of truth. Overlay and N+1 
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npm run build` passes
+- [x] 1.1 `npm run lint` passes — 2a4df20
+- [x] 1.2 `npm run build` passes — 2a4df20
 
 #### Manual
 
-- [x] 1.3 Person page is three columns on a wide viewport and stacks on a narrow one; newest meeting is selected; `?meeting=` selects that row
-- [x] 1.4 Read pane shows topics/notes/wrap-up in small boxes; expand reveals more; fields are not editable; Open meeting reaches capture
-- [x] 1.5 Add a task on the person page; open a meeting; the task appears in the open list; mark it done there; it stays on that meeting’s list as completed and remains on the person list
-- [x] 1.6 Mark a task done on the person page; it does not appear as closed-in a meeting
-- [x] 1.7 Create meeting still opens `/meetings/[id]`
-- [x] 1.8 Reload drops overlay-only floating tasks / stamps (expected until Phase 3)
+- [x] 1.3 Person page is three columns on a wide viewport and stacks on a narrow one; newest meeting is selected; `?meeting=` selects that row — 2a4df20
+- [x] 1.4 Read pane shows topics/notes/wrap-up in small boxes; expand reveals more; fields are not editable; Open meeting reaches capture — 2a4df20
+- [x] 1.5 Add a task on the person page; open a meeting; the task appears in the open list; mark it done there; it stays on that meeting’s list as completed and remains on the person list — 2a4df20
+- [x] 1.6 Mark a task done on the person page; it does not appear as closed-in a meeting — 2a4df20
+- [x] 1.7 Create meeting still opens `/meetings/[id]` — 2a4df20
+- [x] 1.8 Reload drops overlay-only floating tasks / stamps (expected until Phase 3) — 2a4df20
 
 ### Phase 2: Schema & API
 
 #### Automated
 
-- [ ] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate)
-- [ ] 2.2 `npm run lint` and `npm run build` pass
-- [ ] 2.3 Handlers still export `prerender = false` and uppercase methods
+- [x] 2.1 Migration applies cleanly (`npx supabase db reset` or migrate)
+- [x] 2.2 `npm run lint` and `npm run build` pass
+- [x] 2.3 Handlers still export `prerender = false` and uppercase methods
 
 #### Manual
 
-- [ ] 2.4 `GET /api/tasks?employeeId=` returns floating + origin tasks; `GET ?meetingId=` returns open-for-employee + closed-here only
-- [ ] 2.5 `POST` with `employeeId` only creates `meetingId: null`; `POST` with `meetingId` still copies employee
-- [ ] 2.6 PATCH complete from a meeting with stamp; GET meeting list shows it as closed-here; PATCH `{ completedAt: null }` clears stamp
-- [ ] 2.7 PATCH `{ completedAt }` without `completedMeetingId` leaves stamp null
-- [ ] 2.8 Unauthenticated GET/POST/PATCH still 401
-- [ ] 2.9 Soft-delete a meeting: origin tasks disappear; a floating task closed in that meeting remains on employee GET with `completedMeetingId` null
+- [x] 2.4 `GET /api/tasks?employeeId=` returns floating + origin tasks; `GET ?meetingId=` returns open-for-employee + closed-here only
+- [x] 2.5 `POST` with `employeeId` only creates `meetingId: null`; `POST` with `meetingId` still copies employee
+- [x] 2.6 PATCH complete from a meeting with stamp; GET meeting list shows it as closed-here; PATCH `{ completedAt: null }` clears stamp
+- [x] 2.7 PATCH `{ completedAt }` without `completedMeetingId` leaves stamp null
+- [x] 2.8 Unauthenticated GET/POST/PATCH still 401
+- [x] 2.9 Soft-delete a meeting: origin tasks disappear; a floating task closed in that meeting remains on employee GET with `completedMeetingId` null
 
 ### Phase 3: Persist & wire-up
 
