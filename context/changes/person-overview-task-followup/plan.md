@@ -417,15 +417,15 @@ Both surfaces use the Phase 2 APIs as the only source of truth. Overlay and N+1 
 
 #### Automated
 
-- [x] 3.1 `npm run lint` and `npm run build` pass
-- [x] 3.2 No remaining imports of the overlay module
+- [x] 3.1 `npm run lint` and `npm run build` pass — 3f2b351
+- [x] 3.2 No remaining imports of the overlay module — 3f2b351
 
 #### Manual
 
-- [x] 3.3 Full loop: floating add → reload → complete in a meeting → reload both surfaces
-- [x] 3.4 Overview mark-done stays unstamped and is not closed-here on any meeting
-- [x] 3.5 Uncomplete on the meeting page returns the task to the open list on both surfaces
-- [x] 3.6 Newest default + `?meeting=` work; expand boxes read-only; Open meeting edits on capture
-- [x] 3.7 Create meeting still lands on capture; completed meeting still allows task toggle
-- [x] 3.8 Soft-delete meeting removes origin tasks only; floating tasks remain
-- [x] 3.9 Overlay-only Phase 1 rows are gone after reload
+- [x] 3.3 Full loop: floating add → reload → complete in a meeting → reload both surfaces — 3f2b351
+- [x] 3.4 Overview mark-done stays unstamped and is not closed-here on any meeting — 3f2b351
+- [x] 3.5 Uncomplete on the meeting page returns the task to the open list on both surfaces — 3f2b351
+- [x] 3.6 Newest default + `?meeting=` work; expand boxes read-only; Open meeting edits on capture — 3f2b351
+- [x] 3.7 Create meeting still lands on capture; completed meeting still allows task toggle — 3f2b351
+- [x] 3.8 Soft-delete meeting removes origin tasks only; floating tasks remain — 3f2b351
+- [x] 3.9 Overlay-only Phase 1 rows are gone after reload — 3f2b351
