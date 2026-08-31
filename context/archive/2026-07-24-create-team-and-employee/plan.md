@@ -61,6 +61,7 @@ Create the `teams` and `employees` tables with proper foreign keys, soft-delete 
 **Intent**: Create two tables owned by the authenticated manager, with soft-delete via `deleted_at` and row-level security ensuring each manager sees only their own data.
 
 **Contract**:
+
 - `teams` table: `id` (uuid PK, default `gen_random_uuid()`), `manager_id` (uuid FK → `auth.users(id)` ON DELETE CASCADE, NOT NULL), `name` (text NOT NULL), `created_at` (timestamptz default `now()`), `updated_at` (timestamptz default `now()`), `deleted_at` (timestamptz nullable)
 - `employees` table: `id` (uuid PK, default `gen_random_uuid()`), `manager_id` (uuid FK → `auth.users(id)` ON DELETE CASCADE, NOT NULL), `team_id` (uuid FK → `teams(id)` ON DELETE CASCADE, NOT NULL), `name` (text NOT NULL), `role` (text NOT NULL DEFAULT `''`), `created_at` (timestamptz default `now()`), `updated_at` (timestamptz default `now()`), `deleted_at` (timestamptz nullable)
 - RLS enabled on both tables with per-operation policies (SELECT, INSERT, UPDATE, DELETE) scoped to `auth.uid() = manager_id`
@@ -106,6 +107,7 @@ Create JSON API endpoints for teams and employees CRUD. All endpoints validate i
 **Intent**: Handle listing all teams and creating a new team for the authenticated manager.
 
 **Contract**:
+
 - `GET /api/teams` → returns `{ teams: Team[] }` (only non-deleted, scoped by RLS)
 - `POST /api/teams` → accepts `{ name: string }`, validates with zod (name required, non-empty, trimmed), returns `{ team: Team }` with 201 status
 - Both return 401 if not authenticated
@@ -118,6 +120,7 @@ Create JSON API endpoints for teams and employees CRUD. All endpoints validate i
 **Intent**: Handle updating and soft-deleting a single team.
 
 **Contract**:
+
 - `PATCH /api/teams/:id` → accepts `{ name: string }`, validates with zod, returns `{ team: Team }`
 - `DELETE /api/teams/:id` → sets `deleted_at = now()`, returns 204
 - Both return 401 if not authenticated, 404 if team not found (RLS handles scoping)
@@ -129,6 +132,7 @@ Create JSON API endpoints for teams and employees CRUD. All endpoints validate i
 **Intent**: Handle listing employees (filtered by team) and creating a new employee.
 
 **Contract**:
+
 - `GET /api/employees?teamId=<uuid>` → returns `{ employees: Employee[] }` filtered by team, non-deleted
 - `POST /api/employees` → accepts `{ name: string, role: string, teamId: string }`, validates with zod, returns `{ employee: Employee }` with 201
 - Both return 401 if not authenticated
@@ -140,6 +144,7 @@ Create JSON API endpoints for teams and employees CRUD. All endpoints validate i
 **Intent**: Handle updating and soft-deleting a single employee.
 
 **Contract**:
+
 - `PATCH /api/employees/:id` → accepts partial `{ name?, role?, teamId? }`, validates with zod, returns `{ employee: Employee }`
 - `DELETE /api/employees/:id` → sets `deleted_at = now()`, returns 204
 

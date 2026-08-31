@@ -16,20 +16,21 @@ The dashboard is a functional teams/employees hub. A manager can create teams (n
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) |
-|---|---|---|
-| Team fields | Name only | Keep it minimal — no description, color, or icon needed for v1. |
-| Employee fields | Name + role + team | Matches FR-003; email and avatar deferred. |
-| Navigation | Dashboard becomes teams hub | Avoids premature sidebar/routing; single page is enough for ~20 reportees. |
-| CRUD pattern | shadcn Dialog modals | Keeps the user in context; reusable for create and edit. |
-| Empty state | Guided CTA | "Create your first team" reduces friction for first-time users. |
-| Deletion | Soft delete (deleted_at) | Prevents accidental data loss; hard delete is irreversible. |
-| Editing | Yes, via same modal | Reusing the create dialog for edit reduces component count. |
-| Validation | Required fields + non-empty | Client + server; no uniqueness constraints beyond what's needed. |
+| Decision        | Choice                      | Why (1 sentence)                                                           |
+| --------------- | --------------------------- | -------------------------------------------------------------------------- |
+| Team fields     | Name only                   | Keep it minimal — no description, color, or icon needed for v1.            |
+| Employee fields | Name + role + team          | Matches FR-003; email and avatar deferred.                                 |
+| Navigation      | Dashboard becomes teams hub | Avoids premature sidebar/routing; single page is enough for ~20 reportees. |
+| CRUD pattern    | shadcn Dialog modals        | Keeps the user in context; reusable for create and edit.                   |
+| Empty state     | Guided CTA                  | "Create your first team" reduces friction for first-time users.            |
+| Deletion        | Soft delete (deleted_at)    | Prevents accidental data loss; hard delete is irreversible.                |
+| Editing         | Yes, via same modal         | Reusing the create dialog for edit reduces component count.                |
+| Validation      | Required fields + non-empty | Client + server; no uniqueness constraints beyond what's needed.           |
 
 ## Scope
 
 **In scope:**
+
 - `teams` and `employees` tables with RLS
 - JSON API endpoints for full CRUD (list, create, update, soft-delete)
 - React islands for team list, employee list, create/edit/delete dialogs
@@ -37,6 +38,7 @@ The dashboard is a functional teams/employees hub. A manager can create teams (n
 - Guided empty states
 
 **Out of scope:**
+
 - Multi-team assignment, employee email/avatar
 - Search, filtering, drag-and-drop
 - Meeting notes, tasks, or any S-02+ features
@@ -48,10 +50,10 @@ Bottom-up vertical slice: Supabase migration → API endpoints (JSON, zod-valida
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-|---|---|---|
-| 1. Database Schema & RLS | Two tables with indexes and manager-scoped RLS policies | First migration — sets the data model for all future slices |
-| 2. API Layer | JSON CRUD endpoints + shared TypeScript types | New API pattern (JSON vs existing FormData) must be consistent |
+| Phase                        | What it delivers                                        | Key risk                                                       |
+| ---------------------------- | ------------------------------------------------------- | -------------------------------------------------------------- |
+| 1. Database Schema & RLS     | Two tables with indexes and manager-scoped RLS policies | First migration — sets the data model for all future slices    |
+| 2. API Layer                 | JSON CRUD endpoints + shared TypeScript types           | New API pattern (JSON vs existing FormData) must be consistent |
 | 3. UI Components & Dashboard | React islands, dialogs, empty states, dashboard rewrite | Largest phase — most files touched, most surface area for bugs |
 
 **Prerequisites:** Local Supabase running (`npx supabase start`), auth working
