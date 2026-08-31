@@ -248,17 +248,17 @@ None. No schema, no data, no auth-model change.
 
 #### Automated
 
-- [x] 2.1 Topbar has no Dashboard string
-- [x] 2.2 Layout default title is Manager Pad
-- [x] 2.3 AGENTS.md has S-01-scoped public-page section
-- [x] 2.4 `signin.ts` still redirects to `/`
-- [x] 2.5 Lint passes: `npm run lint`
-- [x] 2.6 Build passes: `npm run build`
+- [x] 2.1 Topbar has no Dashboard string — b1b22c5
+- [x] 2.2 Layout default title is Manager Pad — b1b22c5
+- [x] 2.3 AGENTS.md has S-01-scoped public-page section — b1b22c5
+- [x] 2.4 `signin.ts` still redirects to `/` — b1b22c5
+- [x] 2.5 Lint passes: `npm run lint` — b1b22c5
+- [x] 2.6 Build passes: `npm run build` — b1b22c5
 
 #### Manual
 
-- [x] 2.7 Signed-in `/` Topbar: Open the app → `/dashboard`; Sign out works
-- [x] 2.8 Guest Topbar still offers Sign in and Sign up
-- [x] 2.9 Sign-in still lands on `/` with the selling page
-- [x] 2.10 Team / people / meetings still work from `/dashboard`
-- [x] 2.11 Browser tab for `/` reads Manager Pad
+- [x] 2.7 Signed-in `/` Topbar: Open the app → `/dashboard`; Sign out works — b1b22c5
+- [x] 2.8 Guest Topbar still offers Sign in and Sign up — b1b22c5
+- [x] 2.9 Sign-in still lands on `/` with the selling page — b1b22c5
+- [x] 2.10 Team / people / meetings still work from `/dashboard` — b1b22c5
+- [x] 2.11 Browser tab for `/` reads Manager Pad — b1b22c5
