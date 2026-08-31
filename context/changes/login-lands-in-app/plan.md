@@ -204,12 +204,12 @@ None. No schema, no session-format change, no data backfill. Existing cookies ke
 
 #### Automated
 
-- [x] 2.1 AGENTS.md no longer defers post-login to `login-lands-in-app`
-- [x] 2.2 AGENTS.md requires `/dashboard` after sign-in and forbids a signed-in bounce from `/`
-- [x] 2.3 Middleware still leaves `/` public with no signed-in bounce
-- [x] 2.4 Sign-out still redirects to `/`
-- [x] 2.5 Lint passes: `npm run lint`
+- [x] 2.1 AGENTS.md no longer defers post-login to `login-lands-in-app` — 6f62046
+- [x] 2.2 AGENTS.md requires `/dashboard` after sign-in and forbids a signed-in bounce from `/` — 6f62046
+- [x] 2.3 Middleware still leaves `/` public with no signed-in bounce — 6f62046
+- [x] 2.4 Sign-out still redirects to `/` — 6f62046
+- [x] 2.5 Lint passes: `npm run lint` — 6f62046
 
 #### Manual
 
-- [x] 2.6 Public-page section reads as live post-login-to-app rules, not an S-01 deferral
+- [x] 2.6 Public-page section reads as live post-login-to-app rules, not an S-01 deferral — 6f62046
