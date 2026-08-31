@@ -1,10 +1,10 @@
 ---
 change_id: reassign-employee-team
 title: Reassign employee team
-status: implemented
+status: archived
 created: 2026-08-06
-updated: 2026-08-09
-archived_at: null
+updated: 2026-08-31
+archived_at: 2026-08-31T18:54:30Z
 linear_issue: null
 ---
 

@@ -16,13 +16,13 @@ Create and edit both expose a Team select (All people = `null`, plus non-system 
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) |
-| -------- | ------ | ---------------- |
-| Picker placement | Create + edit | One control for assign and fix; create stays correctable before save |
-| Post-reassign UX | Reload list in place | Matches filter semantics; person leaves the open filter if moved away |
-| Filter visibility | Subtitle on All people only | Audit mis-assignments where it matters; avoid redundant labels under a filter |
-| Scope under time pressure | Keep picker + subtitle | Both are small; together they close the gap |
-| Data for options/labels | Pass teams from TeamList | Reuse dashboard load; no second fetch |
+| Decision                  | Choice                      | Why (1 sentence)                                                              |
+| ------------------------- | --------------------------- | ----------------------------------------------------------------------------- |
+| Picker placement          | Create + edit               | One control for assign and fix; create stays correctable before save          |
+| Post-reassign UX          | Reload list in place        | Matches filter semantics; person leaves the open filter if moved away         |
+| Filter visibility         | Subtitle on All people only | Audit mis-assignments where it matters; avoid redundant labels under a filter |
+| Scope under time pressure | Keep picker + subtitle      | Both are small; together they close the gap                                   |
+| Data for options/labels   | Pass teams from TeamList    | Reuse dashboard load; no second fetch                                         |
 
 ## Scope
 
@@ -36,10 +36,10 @@ UI-only. `TeamList` passes non-system `teams` → `EmployeeList` → `EmployeeDi
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-| ----- | ---------------- | -------- |
+| Phase                          | What it delivers                          | Key risk                                                   |
+| ------------------------------ | ----------------------------------------- | ---------------------------------------------------------- |
 | 1. Employee dialog team select | Assign/reassign via Select on create/edit | Sentinel/`null` mapping bugs (system UUID sent by mistake) |
-| 2. All people filter labels | Subtitle on unfiltered list rows | Stale name if teams prop omitted |
+| 2. All people filter labels    | Subtitle on unfiltered list rows          | Stale name if teams prop omitted                           |
 
 **Prerequisites:** `all-people-default-team` implemented (nullable `teamId` + API guards).
 **Estimated effort:** ~1 session across 2 phases
