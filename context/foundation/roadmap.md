@@ -39,10 +39,10 @@ A visitor (or anyone sharing the URL) cannot tell what Manager Pad is: the publi
 
 ## At a glance
 
-| ID   | Change ID            | Outcome (user can …)                                                                                      | Prerequisites | PRD refs | Status      |
-| ---- | -------------------- | --------------------------------------------------------------------------------------------------------- | ------------- | -------- | ----------- |
-| S-01 | selling-landing-page | read what the app is and which problems it solves on the public page, and reach existing signup or log in | —             | US-01    | done        |
-| S-02 | login-lands-in-app   | log in to the app (not “the dashboard”) and land in the app, not on the public page                       | —             | US-01    | in-progress |
+| ID   | Change ID            | Outcome (user can …)                                                                                      | Prerequisites | PRD refs | Status |
+| ---- | -------------------- | --------------------------------------------------------------------------------------------------------- | ------------- | -------- | ------ |
+| S-01 | selling-landing-page | read what the app is and which problems it solves on the public page, and reach existing signup or log in | —             | US-01    | done   |
+| S-02 | login-lands-in-app   | log in to the app (not “the dashboard”) and land in the app, not on the public page                       | —             | US-01    | done   |
 
 ## Streams
 
@@ -94,7 +94,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - If a signed-in user later opens the public URL, should they be sent into the app or still see the landing page? — Owner: user. Block: no (login redirect alone satisfies the primary flow; `/10x-plan` can pick a default).
 - **Risk:** Kept separate from S-01 so the selling page can ship without waiting on destination/wording; blast radius is the login path only — in-app “dashboard” labels stay parked as polish.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -128,5 +128,6 @@ Linear project: [Manager Pad](https://linear.app/maciej-zadworny/project/manager
 
 ## Done
 
+- **S-02: user can log in to the app (not “the dashboard”) and land in the app after login, not on the public page; existing session and team/people/meetings stay unchanged** — Archived 2026-08-31 → `context/archive/2026-08-31-login-lands-in-app/`. Lesson: —.
 - **S-01: visitor can read what the app is and which problems it solves on the public main page, and can reach existing signup or log in to the app from that page** — Archived 2026-08-31 → `context/archive/2026-08-31-selling-landing-page/`. Lesson: —.
 - **S-04: user can open a person overview, select among that employee's meetings, read the selected note, and mark tasks complete or add new tasks from the side panel** — Archived 2026-08-31 → `context/archive/2026-08-15-person-overview-task-followup/`. Lesson: —.
