@@ -230,19 +230,19 @@ None. No schema, no data, no auth-model change.
 
 #### Automated
 
-- [x] 1.1 Guest-visible starter strings are gone from the landing component
-- [x] 1.2 `index.astro` passes title Manager Pad and does not prerender
-- [x] 1.3 Lint passes: `npm run lint`
-- [x] 1.4 Build passes: `npm run build`
+- [x] 1.1 Guest-visible starter strings are gone from the landing component — 566b981
+- [x] 1.2 `index.astro` passes title Manager Pad and does not prerender — 566b981
+- [x] 1.3 Lint passes: `npm run lint` — 566b981
+- [x] 1.4 Build passes: `npm run build` — 566b981
 
 #### Manual
 
-- [x] 1.5 Guest `/` shows Manager Pad, what-it-is subhead, and three locked problem cards
-- [x] 1.6 Sign up is primary and goes to `/auth/signup`
-- [x] 1.7 Log in is secondary and goes to `/auth/signin`
-- [x] 1.8 Existing auth pages still work; no second registration UI
-- [x] 1.9 Cosmic look retained
-- [x] 1.10 `/` still reachable while signed out
+- [x] 1.5 Guest `/` shows Manager Pad, what-it-is subhead, and three locked problem cards — 566b981
+- [x] 1.6 Sign up is primary and goes to `/auth/signup` — 566b981
+- [x] 1.7 Log in is secondary and goes to `/auth/signin` — 566b981
+- [x] 1.8 Existing auth pages still work; no second registration UI — 566b981
+- [x] 1.9 Cosmic look retained — 566b981
+- [x] 1.10 `/` still reachable while signed out — 566b981
 
 ### Phase 2: Signed-in chrome and agent conventions
 
