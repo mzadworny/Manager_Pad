@@ -39,10 +39,10 @@ A visitor (or anyone sharing the URL) cannot tell what Manager Pad is: the publi
 
 ## At a glance
 
-| ID   | Change ID            | Outcome (user can …)                                                                                      | Prerequisites | PRD refs | Status |
-| ---- | -------------------- | --------------------------------------------------------------------------------------------------------- | ------------- | -------- | ------ |
-| S-01 | selling-landing-page | read what the app is and which problems it solves on the public page, and reach existing signup or log in | —             | US-01    | done   |
-| S-02 | login-lands-in-app   | log in to the app (not “the dashboard”) and land in the app, not on the public page                       | —             | US-01    | ready  |
+| ID   | Change ID            | Outcome (user can …)                                                                                      | Prerequisites | PRD refs | Status      |
+| ---- | -------------------- | --------------------------------------------------------------------------------------------------------- | ------------- | -------- | ----------- |
+| S-01 | selling-landing-page | read what the app is and which problems it solves on the public page, and reach existing signup or log in | —             | US-01    | done        |
+| S-02 | login-lands-in-app   | log in to the app (not “the dashboard”) and land in the app, not on the public page                       | —             | US-01    | in-progress |
 
 ## Streams
 
@@ -94,7 +94,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - If a signed-in user later opens the public URL, should they be sent into the app or still see the landing page? — Owner: user. Block: no (login redirect alone satisfies the primary flow; `/10x-plan` can pick a default).
 - **Risk:** Kept separate from S-01 so the selling page can ship without waiting on destination/wording; blast radius is the login path only — in-app “dashboard” labels stay parked as polish.
-- **Status:** ready
+- **Status:** in-progress
 
 ## Backlog Handoff
 
