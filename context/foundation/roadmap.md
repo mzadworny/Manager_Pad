@@ -1,145 +1,126 @@
 ---
 project: Manager Pad
-version: 1
-status: draft
-created: 2026-07-24
+version: 2
+status: active
+created: 2026-08-31
 updated: 2026-08-31
-prd_version: 1
+prd_version: 2
 main_goal: speed
 top_blocker: time
-milestone_id: core-1on1-loop
-milestone_seq: 1
-milestone_status: done
+milestone_id: landing-and-login-into-app
+milestone_seq: 2
+milestone_status: open
 ---
 
 # Roadmap: Manager Pad
 
-> Derived from `context/foundation/prd.md` (v1) + auto-researched codebase baseline.
+> Derived from `context/foundation/prd-v2.md` (v2) + auto-researched codebase baseline.
 > Edit-in-place; archive when superseded.
 > Slices below are listed in dependency order. The "At a glance" table is the index.
 
 ## Milestone
 
-**M-1: Core 1-on-1 loop** — Status: done
+**M-2: Selling landing and login into the app** — Status: open
 
-- **Intent:** Prove the manager can run a 1-on-1 end to end: create a team and employee, capture notes and tasks live, finalize the meeting, and follow up from a person overview.
-- **Source materials:** `context/foundation/prd.md` (v1)
+- **Intent:** Replace the starter public page with an honest selling landing page, and make login enter the product — not “the dashboard” and not the public page.
+- **Source materials:** `context/foundation/prd-v2.md` (v2)
 - **Done when:** every F-NN and S-NN below is `done`.
-- **Scope anchors:** FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, US-01
+- **Scope anchors:** US-01 (must-have: what the app is / problems it solves; signup from the landing page; log in to the app; post-login lands in the app; session and team/people/meetings preserved)
 
 ## Vision recap
 
-Managers with ~20 reportees lose track of 1-on-1 commitments spread across unstructured notes. Manager Pad is a purpose-built web app for preparing meetings, capturing notes and tasks live, and following up from a person overview — without Notion-style DIY setup. Privacy stays manager-only; autosave and snappy navigation are launch guardrails.
+A visitor (or anyone sharing the URL) cannot tell what Manager Pad is: the public page is still the starter. Login is framed as entering “the dashboard,” and after sign-in you land back on that starter page instead of in the app. The product is now real enough to sell — an honest landing page plus login-into-the-app is enough; polished marketing is not required.
 
 ## North star
 
-**S-02: user can create a meeting note, take rich-text notes, and add dated tasks in the side panel** — the validation milestone (the smallest end-to-end slice that would prove the core live 1-on-1 hypothesis) under a speed bias with market-feedback coloring: ship the during-meeting capture loop before person-overview polish.
+**S-01: visitor can read what the app is and which problems it solves, and can sign up or log in to the app from the public page** — the validation milestone (the smallest end-to-end slice that would prove the core “product is real enough to sell” hypothesis) under a speed bias: ship an honest selling page before post-login destination polish.
 
 > Here, "north star" means the smallest end-to-end slice whose successful delivery would prove the core product hypothesis — placed as early as Prerequisites allow because everything else only matters if this works.
 
 ## At a glance
 
-| ID   | Change ID                     | Outcome (user can …)                                                                           | Prerequisites            | PRD refs                      | Status |
-| ---- | ----------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------ | ----------------------------- | ------ |
-| S-01 | create-team-and-employee      | create a team and an employee (name, role, single team) while logged in                        | existing auth (baseline) | FR-001, FR-002, FR-003        | done   |
-| S-02 | meeting-capture-notes-tasks   | create a meeting note, prepare topics, take rich-text notes, add dated tasks in the side panel | S-01                     | FR-004, FR-005, FR-006        | done   |
-| S-03 | finalize-meeting-note         | finalize a meeting with observations/conclusions and mark it complete                          | S-02                     | FR-007                        | done   |
-| S-04 | person-overview-task-followup | open a person overview, select meetings, read notes, and mark or add tasks across meetings     | S-02, S-03               | US-01, FR-008, FR-009, FR-010 | done   |
+| ID   | Change ID            | Outcome (user can …)                                                                                      | Prerequisites | PRD refs | Status      |
+| ---- | -------------------- | --------------------------------------------------------------------------------------------------------- | ------------- | -------- | ----------- |
+| S-01 | selling-landing-page | read what the app is and which problems it solves on the public page, and reach existing signup or log in | —             | US-01    | in-progress |
+| S-02 | login-lands-in-app   | log in to the app (not “the dashboard”) and land in the app, not on the public page                       | —             | US-01    | ready       |
+
+## Streams
+
+Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
+
+| Stream | Theme               | Chain  | Note                                                               |
+| ------ | ------------------- | ------ | ------------------------------------------------------------------ |
+| A      | Selling the product | `S-01` | North star under `speed`; honest copy, not a marketing campaign.   |
+| B      | Entering the app    | `S-02` | Parallel with S-01; existing-manager path; no data or schema work. |
 
 ## Baseline
 
-What's already in place in the codebase as of `2026-07-24` (auto-researched + user-confirmed).
+What's already in place in the codebase as of `2026-08-31` (auto-researched + user-confirmed).
 Foundations below assume these are present and do NOT re-scaffold them.
 
-- **Frontend:** partial — Astro 6 + React 19 + Tailwind 4 + shadcn scaffold; product UI only auth/dashboard starter (`src/pages/`)
-- **Backend / API:** present — Astro SSR + auth API routes (`src/pages/api/auth/*`) + middleware
-- **Data:** partial — Supabase client wired; no product migrations/tables (`supabase/config.toml` only)
-- **Auth:** present — Supabase cookie SSR + `/dashboard` protection (`src/middleware.ts`)
-- **Deploy / infra:** partial — Cloudflare Workers + wrangler; CI lint/build only, no auto-deploy
+- **Frontend:** present — product UI for teams, people, and meetings; public `/` is still the starter Welcome (`src/pages/index.astro`)
+- **Backend / API:** present — SSR + product APIs for teams, employees, meetings, tasks, and auth
+- **Data:** present — product tables and manager-only policies landed in M-1; this milestone needs no schema change
+- **Auth:** present — cookie sessions; `/dashboard`, `/employees`, `/meetings` gated; sign-in currently redirects to `/` (`src/pages/api/auth/signin.ts`)
+- **Deploy / infra:** partial — Cloudflare Workers + wrangler; CI is lint/build only
 - **Observability:** absent — no error tracking / metrics
 
 ## Foundations
 
-(None — auth and API scaffold are present in baseline. Product tables and manager-only privacy policies land inside the first vertical slices that need them, not as a prebuilt data layer.)
+(None — auth, session, and the app home already exist. Post-login destination is user-visible work in S-02, not a prebuilt auth layer.)
 
 ## Slices
 
-### S-01: Create team and employee
+### S-01: Selling landing page
 
-- **Outcome:** user can create a team and an employee record (name, role, single team assignment) while logged in
-- **Change ID:** create-team-and-employee
-- **PRD refs:** FR-001, FR-002, FR-003
-- **Prerequisites:** existing auth (baseline)
-- **Parallel with:** —
+- **Outcome:** visitor can read what the app is and which problems it solves on the public main page, and can reach existing signup or log in to the app from that page
+- **Change ID:** selling-landing-page
+- **PRD refs:** US-01
+- **Prerequisites:** —
+- **Parallel with:** S-02
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** North star under `speed` / `time` — honest copy is enough; blocking on polished marketing would miss the one-week after-hours budget.
+- **Status:** in-progress
+
+### S-02: Login lands in the app
+
+- **Outcome:** user can log in to the app (not “the dashboard”) and land in the app after login, not on the public page; existing session and team/people/meetings stay unchanged
+- **Change ID:** login-lands-in-app
+- **PRD refs:** US-01
+- **Prerequisites:** —
+- **Parallel with:** S-01
 - **Blockers:** —
 - **Unknowns:**
-  - Primary Success Criteria step 3 mentions multi-team assignment while FR-003 resolves single team for v1 — treat FR-003 as authoritative for this slice? — Owner: user. Block: no.
-- **Risk:** Sequenced first because every later slice needs employees; introducing the first manager-owned tables here (not in a horizontal foundation) keeps the path vertical under `speed`.
-- **Status:** done
-
-### S-02: Meeting capture — notes and tasks
-
-- **Outcome:** user can create a meeting note for an employee, prepare topics, take rich-text notes during the meeting, and create tasks with planned completion dates in the side panel
-- **Change ID:** meeting-capture-notes-tasks
-- **PRD refs:** FR-004, FR-005, FR-006
-- **Prerequisites:** S-01
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** North star — placed as early as Prerequisites allow; autosave NFR must land with note/task edits here or the live-meeting guardrail fails.
-- **Status:** done
-
-### S-03: Finalize meeting note
-
-- **Outcome:** user can add observations and conclusions to a meeting note and mark it complete
-- **Change ID:** finalize-meeting-note
-- **PRD refs:** FR-007
-- **Prerequisites:** S-02
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** Kept separate from S-02 so capture stays shippable without finalize UI; completed status (not lock) matches FR-007 resolution.
-- **Status:** done
-
-### S-04: Person overview and cross-meeting tasks
-
-- **Outcome:** user can open a person overview, select among that employee's meetings, read the selected note, and mark tasks complete or add new tasks from the side panel
-- **Change ID:** person-overview-task-followup
-- **PRD refs:** US-01, FR-008, FR-009, FR-010
-- **Prerequisites:** S-02, S-03
-- **Parallel with:** —
-- **Blockers:** —
-- **Unknowns:** —
-- **Risk:** Delivers the Vision pain (commitments across meetings) one slice after the north star; sequenced after finalize so the Primary Success Criteria end-to-end flow is intact.
-- **Status:** done
+  - If a signed-in user later opens the public URL, should they be sent into the app or still see the landing page? — Owner: user. Block: no (login redirect alone satisfies the primary flow; `/10x-plan` can pick a default).
+- **Risk:** Kept separate from S-01 so the selling page can ship without waiting on destination/wording; blast radius is the login path only — in-app “dashboard” labels stay parked as polish.
+- **Status:** ready
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                     | Suggested issue title                     | Linear                                                  | Ready for `/10x-plan` | Notes                                         |
-| ---------- | ----------------------------- | ----------------------------------------- | ------------------------------------------------------- | --------------------- | --------------------------------------------- |
-| S-01       | create-team-and-employee      | Manager can create a team and employee    | [MAC-5](https://linear.app/maciej-zadworny/issue/MAC-5) | no                    | Implemented                                   |
-| S-02       | meeting-capture-notes-tasks   | Meeting capture: notes + side-panel tasks | [MAC-6](https://linear.app/maciej-zadworny/issue/MAC-6) | no                    | Implemented (north star)                      |
-| S-03       | finalize-meeting-note         | Finalize meeting with observations        | [MAC-7](https://linear.app/maciej-zadworny/issue/MAC-7) | no                    | Implemented                                   |
-| S-04       | person-overview-task-followup | Person overview + cross-meeting tasks     | [MAC-8](https://linear.app/maciej-zadworny/issue/MAC-8) | yes                   | Run `/10x-plan person-overview-task-followup` |
+| Roadmap ID | Change ID            | Suggested issue title                       | Ready for `/10x-plan` | Notes                                       |
+| ---------- | -------------------- | ------------------------------------------- | --------------------- | ------------------------------------------- |
+| S-01       | selling-landing-page | Selling landing page (replace the starter)  | yes                   | Run `/10x-plan selling-landing-page`        |
+| S-02       | login-lands-in-app   | Login lands in the app, not the public page | yes                   | Parallel with S-01; login-path wording only |
 
 Linear project: [Manager Pad](https://linear.app/maciej-zadworny/project/manager-pad-20207118e177). Sequencing stays in this file; board status is agent-synced via MCP (see `AGENTS.md` → Linear sync).
 
 ## Open Roadmap Questions
 
-1. **What are the target `qps` and `data_volume` ballparks for `target_scale`?** — Owner: user. Block: roadmap-wide (non-blocking for first slices; matters for later scale/AI cost decisions).
-2. **Primary flow step 3 vs FR-003:** Primary Success Criteria mentions multi-team assignment; FR-003 resolves single team per employee for v1. Which wording is authoritative for MVP? — Owner: user. Block: S-01 (soft — FR-003 is the working assumption).
-3. **FR-011 privacy-preserving AI approach:** If AI summaries ship, what privacy model is acceptable? — Owner: user. Block: no for MVP path (nice-to-have; see Parked).
+1. **What is the key architecture of the current system?** — Owner: user. Block: no (prd-v2: does not block this change; core functionality is captured).
 
 ## Parked
 
-- **Reportee login / employee-facing portal** — Why parked: PRD §Non-Goals.
-- **Full HR or performance-review suite** — Why parked: PRD §Non-Goals.
-- **Real-time co-editing with employees** — Why parked: PRD §Non-Goals.
-- **Offline-first / full mobile-native for v1** — Why parked: PRD §Non-Goals.
-- **Custom LLM training** — Why parked: PRD §Non-Goals.
-- **Calendar, Slack, or Teams integrations for v1** — Why parked: PRD §Non-Goals.
-- **AI summary of past meetings (FR-011)** — Why parked: nice-to-have under `main_goal: speed` / `top_blocker: time`; privacy model still open before any later un-park.
-- **Voice notes during meeting (FR-012 / was S-05)** — Why parked: not must-have for M-1 under `top_blocker: time` and `hard_deadline: 2026-08-31`; core 1-on-1 loop closes without live recording.
+- **How the app works on the landing page** — Why parked: prd-v2 nice-to-have; under `main_goal: speed` / `top_blocker: time` the must-have is what the app is and which problems it solves.
+- **In-app UX polish** (person entry on the team list, meeting-note icon, person-overview layout, in-app “dashboard” labels) — Why parked: prd-v2 §Non-Goals; this milestone is landing page + login-into-the-app only.
+- **Voice notes during meeting (FR-012)** — Why parked: deferred from M-1; not in prd-v2 scope.
+- **AI summary of past meetings (FR-011)** — Why parked: deferred from M-1; privacy model still open.
+- **Reportee login / employee-facing portal** — Why parked: still a product non-goal.
+- **Full HR or performance-review suite** — Why parked: still a product non-goal.
+- **Real-time co-editing with employees** — Why parked: still a product non-goal.
+- **Offline-first / full mobile-native** — Why parked: still a product non-goal.
+- **Custom LLM training** — Why parked: still a product non-goal.
+- **Calendar, Slack, or Teams integrations** — Why parked: still a product non-goal.
 
 ## Milestone History
 

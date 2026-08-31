@@ -16,14 +16,14 @@ Manager Pad is a manager 1-on-1 notes web app built on the 10x Astro starter: As
 
 Roadmap sequencing lives in @context/foundation/roadmap.md. Execution board is Linear project **Manager Pad**. Link via `change.md.linear_issue` and the Backlog Handoff **Linear** column. Sync is agent-mediated (Linear MCP) — not automatic:
 
-| Event | Linear state |
-|---|---|
-| Roadmap `ready` / change `new`…`plan_reviewed` | `Todo` |
-| `/10x-plan` → `planned` | comment; keep `Todo` |
-| `/10x-implement` → `implementing` | `In Progress` + comment |
-| Implement complete → `implemented` / `impl_reviewed` | `In Review` + comment |
-| `/10x-archive` / roadmap Done | `Done` + comment |
-| Roadmap `blocked` | `Backlog` + blocker noted in description/comment |
+| Event                                                | Linear state                                     |
+| ---------------------------------------------------- | ------------------------------------------------ |
+| Roadmap `ready` / change `new`…`plan_reviewed`       | `Todo`                                           |
+| `/10x-plan` → `planned`                              | comment; keep `Todo`                             |
+| `/10x-implement` → `implementing`                    | `In Progress` + comment                          |
+| Implement complete → `implemented` / `impl_reviewed` | `In Review` + comment                            |
+| `/10x-archive` / roadmap Done                        | `Done` + comment                                 |
+| Roadmap `blocked`                                    | `Backlog` + blocker noted in description/comment |
 
 Prefer `linear_issue` in commit `Refs:` lines. Skip Linear updates silently when MCP is unavailable or `linear_issue` is null.
 
@@ -34,6 +34,15 @@ No test runner or `test` script yet. Do not invent a framework without a product
 ## Planning preference
 
 Prefer **UI-first** implementation phases for product features: interactive shells with local/mock state first (so the manager can click through and give feedback), then schema → API → persistence. See @context/foundation/lessons.md. Pure backend/infra changes may stay schema-first.
+
+## Public page and post-login (landing-page change)
+
+- The public main page is @src/pages/index.astro. It is unauthenticated. Do not put it on `PROTECTED_ROUTES` in @src/middleware.ts.
+- Prefer Astro (not a React island) for selling/landing content unless a control truly needs client interactivity.
+- Signup from the landing page links to the existing signup path (`/auth/signup`). Do not add a second registration system.
+- Log-in from the landing page links to `/auth/signin`. Public-path language is log in to / open the app, not “the dashboard.”
+- Post-login destination (do not send a successful sign-in to `/`) is **not** this change — see `login-lands-in-app`.
+- Verify this flow in the browser. Do not add a test runner to cover it.
 
 ## CI and Pull Requests
 

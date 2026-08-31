@@ -32,7 +32,7 @@ The change-id must be:
 - unique across `context/changes/` and `context/archive/`
 ```
 
-   Then **wait** for the user to provide an argument.
+Then **wait** for the user to provide an argument.
 
 ## Argument Parsing
 
@@ -47,13 +47,13 @@ Split the raw argument string on the first run of whitespace:
 
 Examples:
 
-| Raw input | `<change-id>` | Intent |
-|-----------|---------------|--------|
-| `feature-x` | `feature-x` | (empty) |
-| `oauth-login add Google sign-in for faster onboarding` | `oauth-login` | `add Google sign-in for faster onboarding` |
-| `@context/changes/oauth-login/` | `oauth-login` | (empty) |
-| `@context/changes/oauth-login/ revisit the token-refresh edge case` | `oauth-login` | `revisit the token-refresh edge case` |
-| `My Feature add OAuth` | `My Feature` (will fail kebab-case check) | `add OAuth` |
+| Raw input                                                           | `<change-id>`                             | Intent                                     |
+| ------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------ |
+| `feature-x`                                                         | `feature-x`                               | (empty)                                    |
+| `oauth-login add Google sign-in for faster onboarding`              | `oauth-login`                             | `add Google sign-in for faster onboarding` |
+| `@context/changes/oauth-login/`                                     | `oauth-login`                             | (empty)                                    |
+| `@context/changes/oauth-login/ revisit the token-refresh edge case` | `oauth-login`                             | `revisit the token-refresh edge case`      |
+| `My Feature add OAuth`                                              | `My Feature` (will fail kebab-case check) | `add OAuth`                                |
 
 ## Validation
 
@@ -72,15 +72,11 @@ Before creating anything:
 1. Create directory `context/changes/<change-id>/`.
 2. Derive the `<title>`:
    - If the intent string is empty, humanize the change-id: replace hyphens with spaces and capitalize the first letter (e.g., `multi-course-access` → `Multi course access`).
-   - If the intent string is non-empty, write a concise human-readable title (≤ 80 chars, sentence case, no trailing period) that captures what the change is about. The intent is *guidance*, not a literal — feel free to rephrase. Don't dump a paragraph into the title.
+   - If the intent string is non-empty, write a concise human-readable title (≤ 80 chars, sentence case, no trailing period) that captures what the change is about. The intent is _guidance_, not a literal — feel free to rephrase. Don't dump a paragraph into the title.
 3. Derive the `## Notes` body:
    - If the intent string is empty, emit the hint comment: `<!-- Free-form notes for this change: links, ad-hoc context, decisions that don't belong in research/frame/plan. -->`
    - If the intent string is non-empty, drop it verbatim as the Notes body — the user's words are the seed. Do not also emit the hint comment in that case (the user has shown they know what Notes are for).
-4. Resolve optional `linear_issue` from the roadmap handoff (best effort; never blocks creation):
-   - If `context/foundation/roadmap.md` exists, find the `## Backlog Handoff` row whose **Change ID** cell equals `<change-id>` exactly.
-   - From that row's **Linear** column, extract the issue identifier (e.g. `MAC-5` from `[MAC-5](...)` or a bare `MAC-5`). Set `<linear_issue>` to that identifier.
-   - If no match, no Linear column, or the cell is empty/`—`, set `<linear_issue>` to `null`.
-5. Write `context/changes/<change-id>/change.md` with this exact shape (the `<notes-body>` slot is what step 3 produced):
+4. Write `context/changes/<change-id>/change.md` with this exact shape (the `<notes-body>` slot is what step 3 produced):
 
 ```markdown
 ---
@@ -90,7 +86,6 @@ status: new
 created: <YYYY-MM-DD>
 updated: <YYYY-MM-DD>
 archived_at: null
-linear_issue: <linear_issue>
 ---
 
 ## Notes
@@ -100,7 +95,7 @@ linear_issue: <linear_issue>
 
 `<YYYY-MM-DD>` is today's date (use `date +%Y-%m-%d`).
 
-See `references/change-md.md` for the full schema reference (allowed status values, transitions, `linear_issue`, what is intentionally NOT in `change.md`).
+See `reference/change-md.md` for the full schema reference (allowed status values, transitions, what is intentionally NOT in `change.md`).
 
 ## Next-step suggestion
 
@@ -122,7 +117,6 @@ Then display:
 
 ```
 ✓ Created context/changes/<change-id>/change.md (status: new)
-  linear_issue: <MAC-N or null>
 
 Next step:
   → <NEXT_CMD>  (✓ copied to clipboard)

@@ -12,17 +12,12 @@ status: <status> # required, see allowed values below
 created: YYYY-MM-DD # required, set at /10x-new time
 updated: YYYY-MM-DD # required, last lifecycle skill write
 archived_at: <iso-datetime> # null until /10x-archive runs
-linear_issue: <TEAM-N or null> # optional; Linear issue id when linked (e.g. MAC-5)
 ---
 
 ## Notes
 
 <!-- Free-form notes for this change: links, ad-hoc context, decisions that don't belong in research/frame/plan. -->
 ```
-
-## `linear_issue`
-
-Optional. When `context/foundation/roadmap.md` `## Backlog Handoff` has a row whose **Change ID** equals this change, `/10x-new` copies that row's Linear identifier (e.g. `MAC-5`) into `linear_issue`. Lifecycle skills (`/10x-plan`, `/10x-implement`, `/10x-archive`) use it to agent-sync Linear via MCP. Omit the key or set `null` when there is no linked issue. Do not invent IDs.
 
 ## Allowed `status` values
 
@@ -57,4 +52,4 @@ By design:
 
 - No `artifacts.*` block — derive from `ls` of the change folder.
 - No `implementation.{total_phases,completed_phases,current_phase}` — derive from the `## Progress` section in `plan.md`.
-- No `requires` / `blocked_by` — out of scope (use Linear `blockedBy` + roadmap Prerequisites).
+- No `requires` / `blocked_by` — out of scope.

@@ -1,157 +1,174 @@
 ---
 project: Manager Pad
-context_type: greenfield
-created: 2026-07-09
-updated: 2026-07-09
+context_type: brownfield
+created: 2026-08-30
+updated: 2026-08-31
 product_type: web-app
 target_scale:
-  users: large
-  qps: null
-  data_volume: null
+  users: small
 timeline_budget:
-  mvp_weeks: 5
-  hard_deadline: 2026-08-31
+  delivery_weeks: 1
+  hard_deadline: null
   after_hours_only: true
 checkpoint:
   current_phase: 8
   phases_completed: [1, 2, 3, 4, 5, 6, 7]
   gray_areas_resolved:
-    - topic: pain category
-      decision: workflow friction — too many notes across ~20 reportees, hard to navigate at the right moment
-    - topic: insight
-      decision: many tools can do this if you configure them (e.g. Notion), but few offer a purpose-built 1-on-1 manager workflow out of the box
+    - topic: change category
+      decision: significant feature — replace the Astro starter with a selling landing page + login-into-the-app
     - topic: primary persona scope
-      decision: single manager (self first) with ~20 reportees
-    - topic: access control
-      decision: login (email + password / OAuth); flat user model — one manager account, reportees are data not users
-  frs_drafted: 12
+      decision: primary new visitor (landing page must sell); secondary existing manager (login into the app)
+    - topic: insight / why now
+      decision: starter was enough while the app was being built; the product is now real enough to sell
+    - topic: must preserve
+      decision: login, session, and the existing app (team / people / meetings) must keep working unchanged
+    - topic: auth model
+      decision: no changes planned — current model preserved
+    - topic: roles
+      decision: no new roles, no shifting boundaries — one kind of signed-in user
+    - topic: mvp flow
+      decision: visitor sees selling landing page → sign up or log in → lands in the app
+    - topic: blast radius
+      decision: public main page + post-login destination / dashboard wording on that path; in-app untouched
+    - topic: delivery timeline
+      decision: about 1 week of after-hours work
+    - topic: domain rule delta
+      decision: new rule — the public page must state what the app is and which problems it solves; existing 1:1/people/meetings rule unchanged
+    - topic: constraints
+      decision: no data migration; respect existing login/signup; don’t break team/people/meetings; public URL still serves the main page
+    - topic: product type
+      decision: no change — existing web app
+    - topic: user base
+      decision: same small user base; landing page is for visitors but not opening to a new scale
+    - topic: timing
+      decision: no hard deadline; after-hours only
+    - topic: non-goals
+      decision: in-app UX polish (person entry, meeting icon, person-overview layout) is out of this change
+  frs_drafted: 7
   quality_check_status: accepted
 ---
 
+## Seed idea (verbatim)
+
+I would like to add some more changes to the project.
+
+1. When on team dashboard I would like to make entering a person easier - now it's a little arrow that's equal in size to rename and delete. Those other two option should be rarely used compared to the main one.
+2. In person view the button to enter a meeting note has an icon that suggest it will be opened in a new window. I don't think it's good.
+3. I don't like the UX of the person overview - button for new meeting and opening meeting sit in weird places - I would like to establush a roadmap item for proper research around it.
+4. When logging in we land on the main page that's current;y Astro starter rather then in the app. We should land in the app.
+5. We should rename "the dashboard" into something that suggest that there is an app there that you can use.
+6. Current Astro Starter should be changes into a simple landing page that explains what this app is and how it works and encourages to register/signup.
+
+Additional seed (verbatim, 2026-08-31):
+
+one additional thing to add to the roadmap is the adjustment of the main page which is now astro starter. We need to turn it into a landing page that sells what this app is and allows to log in to the app rather then log in to the dashboard. This page should sell what this app is and what problems its solving.
+
+Scope lock for this shape session: the significant feature only (landing page that sells + login into the app, not “the dashboard”). In-app UX polish and person-overview research from seed items 1–3 are out of this change.
+
+## Current System
+
+Manager Pad already has an app (team, people, meetings) and login. The public main page is still the Astro starter. After login, people land there and are pointed at “the dashboard.”
+
+Tech stack named by the user: the public main page is the Astro starter. Nothing else stated.
+
+Users today: an existing manager who already has an account, plus anyone who hits the public URL.
+
 ## Vision & Problem Statement
 
-A manager with ~20 reportees accumulates notes from many 1-on-1 meetings that become difficult to navigate. OneNote — the current tool — provides no proper structure for a 1-on-1 format. When the manager writes down tasks an employee should complete, there is no way to see those commitments across multiple notes between meetings. There is also no AI implementation to help summarize what has been discussed between sessions.
+A visitor (or you, sharing the URL) cannot tell what the product is or which problems it solves. Login does not feel like entering the product — it is framed as logging in to “the dashboard,” and after login you land on the starter page rather than in the app.
 
-Many tools can approximate this workflow if you set them up yourself (e.g. Notion), but few offer a specific, purpose-built solution for the manager 1-on-1 workflow. General-purpose note apps grow to fulfill many applications, shifting the setup burden onto the manager.
+The starter was enough while the app was being built; the product is now real enough to sell. This change replaces the Astro starter with a landing page that sells what the app is and what problems it solves, encourages register/signup, and lets people log in to the app rather than to “the dashboard.” After login they should land in the app.
 
-**Scale note:** At thousands of users, recall and summaries must work with years of meeting history per employee; AI summary costs may require tiering or limits.
+Must preserve: login, session, and the existing app (team / people / meetings) must keep working unchanged.
 
 ## User & Persona
 
-**Primary persona:** The manager themselves — a line manager with approximately 20 direct reports who runs regular 1-on-1s.
+**Primary:** a new visitor who does not have an account yet. They hit the public main page and need to understand what this app is, what problems it solves, and be able to register/signup.
 
-**Context:** They currently use OneNote for meeting notes and need structure that OneNote does not provide.
+### Secondary persona
 
-**Moment they reach for this product:** Preparing for an upcoming 1-on-1, during the meeting when capturing notes and action items, and between meetings when following up on commitments made across prior sessions.
+**Existing manager** (you) who already has an account. After login they must land in the app, not on the starter page, and the entry should feel like logging in to the app rather than to “the dashboard.”
 
 ## Access Control
 
-Login required (email + password or OAuth).
+Login already exists; one kind of signed-in user; the public page is unauthenticated.
 
-Flat user model: one manager account. Reportees are records in the system, not separate user accounts. No role separation for MVP.
+No changes planned — current model preserved.
 
 ## Success Criteria
 
 ### Primary
 
-The manager can complete this end-to-end flow:
+The selling landing page + login-into-the-app flow works:
 
-1. Log in
-2. Create a team (folder for employees)
-3. Create an employee record — name, role, assign to team(s) if in multiple teams
-4. Create a meeting note — prepare topics to discuss
-5. Hold the meeting — take notes; create tasks in the side panel (with planned completion date)
-6. Finalize the meeting — add observations and conclusions; mark the note complete
-7. In the person overview — use a meeting selector, view task list in the side panel, read notes, mark tasks complete or add new ones
+1. Visitor opens the public URL.
+2. They see a landing page that sells what the app is and which problems it solves — not the Astro starter.
+3. From that page they can sign up or log in; the language is log in to the app, not “the dashboard.”
+4. After login they land in the app, not back on the public page.
+
+Blast radius: public main page + post-login destination / “dashboard” wording on that path. Team / people / meetings stay untouched. Estimated delivery: ~1 week of after-hours work.
 
 ### Secondary
 
-AI summary of past meetings for a reportee — a digest of what was discussed between sessions.
+The landing page also explains how the app works, not only what problem it solves.
 
 ### Guardrails
 
-- Notes and tasks are private to the logged-in manager only
-- Navigation remains usable with ~20 reportees (person overview, meeting selector, task list)
-- Note content autosaves — no manual save required; nothing is lost when the manager jumps between tabs or takes long breaks
-
-## Timeline acknowledgment
-
-Acknowledged on 2026-07-09: 4–6-week MVP (estimated 5 weeks) requires sustained dedication; user accepted after scoping discussion (teams retained in v1).
+Login, session, and team/people/meetings keep working unchanged.
 
 ## Functional Requirements
 
-### Teams & employees
+### Landing page
 
-- FR-001: Manager can log in. Priority: must-have
-  > Socrates: No counter-argument; it stands as written.
-- FR-002: Manager can create a team (folder for employees). Priority: must-have
-  > Socrates: No counter-argument; it stands as written.
-- FR-003: Manager can create an employee record with name, role, and team assignment. Priority: must-have
-  > Socrates: Counter-argument considered: multi-team assignment is rare YAGNI for v1. Resolution: single team per employee for v1; multi-team deferred.
+- FR-001: Visitor can read what the app is and which problems it solves on the public main page. Priority: must-have. Change: new
+  > Socrates: Counter-argument considered: "This turns into a copy-writing trap and delays the real product work." Resolution: kept as must-have; a clear honest page is enough — don’t block on polished marketing copy.
+- FR-002: Visitor can read how the app works on that page. Priority: nice-to-have. Change: new
+  > Socrates: Counter-argument considered: "It duplicates FR-001 — problem + product is enough; mechanism belongs later." Resolution: kept as nice-to-have; “how it works” can be a short paragraph, not a second page.
 
-### Meeting lifecycle
+### Sign-up and login path
 
-- FR-004: Manager can create a meeting note and prepare topics to discuss. Priority: must-have
+- FR-003: Visitor can reach register/sign up from the landing page (existing signup, not a new registration campaign). Priority: must-have. Change: modified
+  > Socrates: Counter-argument considered: "You’re not ready for open registration — encouraging signup on a public page is premature." Resolution: kept; landing page links to existing signup — not a new open-registration campaign.
+- FR-004: Visitor / manager can log in to the app (not “the dashboard”) from the landing page. Priority: must-have. Change: modified
   > Socrates: No counter-argument; it stands as written.
-- FR-005: Manager can take rich-text notes during a meeting. Priority: must-have
-  > Socrates: Counter-arguments considered: plain text may be too weak; typing during 1-on-1s is awkward. Resolution: rich text required for v1; voice notes split to FR-012.
-- FR-006: Manager can create tasks in the side panel of a meeting note, with a planned completion date. Priority: must-have
-  > Socrates: No counter-argument; it stands as written.
-- FR-007: Manager can finalize a meeting note with observations and conclusions, and mark it complete. Priority: must-have
-  > Socrates: Counter-argument considered: locking notes is overkill. Resolution: completed status replaces lock for v1.
-- FR-012: Manager can record voice notes during a meeting. Priority: must-have
-  > Socrates: Counter-argument considered: voice may duplicate rich-text notes. Resolution: kept; voice supports hands-free capture during live 1-on-1s.
-
-### Person overview & tasks
-
-- FR-008: Manager can view a person overview with a meeting selector and task list in the side panel. Priority: must-have
-  > Socrates: No counter-argument; it stands as written.
-- FR-009: Manager can read meeting notes from the person overview. Priority: must-have
-  > Socrates: No counter-argument; it stands as written.
-- FR-010: Manager can mark tasks complete or add new tasks from the person overview. Priority: must-have
+- FR-005: Signed-in user lands in the app after login, not on the public page. Priority: must-have. Change: modified
   > Socrates: No counter-argument; it stands as written.
 
-### AI (secondary)
+### Preserved
 
-- FR-011: Manager can receive an AI summary of past meetings for a reportee. Priority: nice-to-have
-  > Socrates: Counter-argument considered: sending notes to an external AI API may conflict with the privacy guardrail. Resolution: kept as nice-to-have; must use a privacy-preserving approach (e.g. on-device or explicit consent) if implemented.
+- FR-006: Signed-in user can still authenticate and keep a session. Priority: must-have. Change: preserved
+  > Socrates: No counter-argument; it stands as written.
+- FR-007: Manager can still use team, people, and meetings unchanged. Priority: must-have. Change: preserved
+  > Socrates: No counter-argument; it stands as written.
 
 ## User Stories
 
-### US-01: Manager completes a 1-on-1 and tracks tasks across meetings
+### US-01: Visitor is sold, then enters the app
 
-- **Given** a logged-in manager with at least one employee and one prior meeting note
-- **When** they open the person overview, navigate between meetings, and mark a task complete
-- **Then** they see the task status updated and can read notes from any selected meeting
-
-#### Acceptance Criteria
-
-- Task completion persists across sessions
-- Meeting selector shows all meetings for that employee
-- Notes from the selected meeting are readable in the overview
+- **Given** a visitor on the public URL (Astro starter today)
+- **When** they open the main page
+- **Then** they see a page that sells what the app is and which problems it solves, can sign up or log in to the app (not “the dashboard”), and after login land in the app — not back on the public page.
 
 ## Business Logic
 
-The app structures every manager and employee interaction to make following up on commitments and progress easier.
+The public page must state what the app is and which problems it solves.
 
-**Inputs:** Preparation topics for discussion, live notes, tasks with dates, and observations.
+The existing rule is unchanged: the app is a place for a manager to keep 1:1 / people / meeting notes. This change does not rewrite that.
 
-**Output:** Open tasks across meetings, an overview of meetings, and a summary of main topics discussed and main observations.
+A visitor hits the public URL, reads what the app is and which problems it solves (honest copy, not a polished marketing campaign), and can reach existing signup or log in to the app.
 
-**Where the user encounters it:** During a meeting that follows one or more previous meetings — when the manager needs to easily recall what was discussed earlier with that employee.
+## Constraints & Preserved Behavior
+
+No data migration. Respect existing login/signup. Don’t break team / people / meetings. The public URL still serves the main page (now a landing page instead of the Astro starter).
 
 ## Non-Functional Requirements
 
-- Note and task edits persist continuously as the manager works, without requiring manual save actions or interrupting the flow
-- Navigation between employees and meeting notes feels immediate from the user's perspective — no noticeable delay when moving between people and notes
-- Notes and tasks remain private to the logged-in manager only
+- A visitor can tell what the product is from the public page without needing polished marketing.
 
 ## Non-Goals
 
-- **Avoid reportee login / employee-facing portal** — MVP is manager-only; reportees are records, not users.
-- **Avoid a full HR or performance-review suite** — focused on 1-on-1 notes and follow-up, not ratings or reviews.
-- **Avoid real-time co-editing with employees** — notes are manager-authored; no shared live editing.
-- **Avoid offline-first / full mobile-native for v1** — web app first; offline and native mobile deferred.
-- **Avoid building our own LLM** — if AI summaries ship, use external AI with privacy constraints; no custom model training.
-- **Avoid calendar, Slack, or Teams integrations for v1** — standalone workflow first; integrations deferred.
+- In-app UX polish (person entry on the team list, meeting-note icon, person-overview layout) is out of this change — this session is the landing page + login-into-the-app only.
 
+## Quality cross-check
+
+All brownfield checks present (Access Control, Business Logic one-sentence rule, project artifacts, timeline-cost, Non-Goals, preserved behavior). No gaps. Status: accepted.

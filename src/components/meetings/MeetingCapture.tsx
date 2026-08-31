@@ -300,7 +300,7 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         title="Delete meeting?"
-        description="This will soft-delete the meeting and its tasks. You will return to the person page."
+        description="This will soft-delete the meeting and tasks created in it. Person-level tasks stay on the overview. You will return to the person page."
         onConfirm={async () => {
           const response = await fetch(`/api/meetings/${meetingId}`, { method: "DELETE" });
           if (!response.ok) {

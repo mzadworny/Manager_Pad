@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireApiAuth } from "@/lib/api-auth";
-import { toTask, type TaskRow } from "@/types";
+import { toTask, type MeetingRow, type TaskRow } from "@/types";
 
 export const prerender = false;
 
@@ -49,6 +49,45 @@ export const PATCH: APIRoute = async (context) => {
     return Response.json({ error: z.treeifyError(parsed.error) }, { status: 400 });
   }
 
+  // completedMeetingId is only honored when completedAt is also provided and non-null
+  // (uncomplete always clears the stamp; overview omits the key so a null stamp stays null).
+  if (parsed.data.completedAt !== undefined && parsed.data.completedAt !== null && parsed.data.completedMeetingId) {
+    const taskResult = (await auth.supabase
+      .from("tasks")
+      .select("id, employee_id")
+      .eq("id", idResult.data)
+      .maybeSingle()) as {
+      data: Pick<TaskRow, "id" | "employee_id"> | null;
+      error: PostgrestError | null;
+    };
+
+    if (taskResult.error) {
+      return Response.json({ error: taskResult.error.message }, { status: 500 });
+    }
+    if (!taskResult.data) {
+      return Response.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    const meetingResult = (await auth.supabase
+      .from("meetings")
+      .select("id, employee_id")
+      .eq("id", parsed.data.completedMeetingId)
+      .maybeSingle()) as {
+      data: Pick<MeetingRow, "id" | "employee_id"> | null;
+      error: PostgrestError | null;
+    };
+
+    if (meetingResult.error) {
+      return Response.json({ error: meetingResult.error.message }, { status: 500 });
+    }
+    if (!meetingResult.data) {
+      return Response.json({ error: "Meeting not found" }, { status: 404 });
+    }
+    if (meetingResult.data.employee_id !== taskResult.data.employee_id) {
+      return Response.json({ error: "completedMeetingId does not match the task's employee" }, { status: 400 });
+    }
+  }
+
   const updates: Record<string, string | null> = {};
   if (parsed.data.title !== undefined) {
     updates.title = parsed.data.title;
@@ -56,8 +95,6 @@ export const PATCH: APIRoute = async (context) => {
   if (parsed.data.plannedDate !== undefined) {
     updates.planned_date = parsed.data.plannedDate;
   }
-  // completedMeetingId is only honored when completedAt is also provided and non-null
-  // (uncomplete always clears the stamp; overview omits the key so a null stamp stays null).
   if (parsed.data.completedAt !== undefined) {
     updates.completed_at = parsed.data.completedAt;
     if (parsed.data.completedAt === null) {
