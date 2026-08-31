@@ -1,10 +1,10 @@
 ---
 change_id: selling-landing-page
 title: Selling landing page (replace the starter)
-status: implemented
+status: archived
 created: 2026-08-31
 updated: 2026-08-31
-archived_at: null
+archived_at: 2026-08-31T18:52:45Z
 ---
 
 ## Notes

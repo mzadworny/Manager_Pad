@@ -39,10 +39,10 @@ A visitor (or anyone sharing the URL) cannot tell what Manager Pad is: the publi
 
 ## At a glance
 
-| ID   | Change ID            | Outcome (user can …)                                                                                      | Prerequisites | PRD refs | Status      |
-| ---- | -------------------- | --------------------------------------------------------------------------------------------------------- | ------------- | -------- | ----------- |
-| S-01 | selling-landing-page | read what the app is and which problems it solves on the public page, and reach existing signup or log in | —             | US-01    | in-progress |
-| S-02 | login-lands-in-app   | log in to the app (not “the dashboard”) and land in the app, not on the public page                       | —             | US-01    | ready       |
+| ID   | Change ID            | Outcome (user can …)                                                                                      | Prerequisites | PRD refs | Status |
+| ---- | -------------------- | --------------------------------------------------------------------------------------------------------- | ------------- | -------- | ------ |
+| S-01 | selling-landing-page | read what the app is and which problems it solves on the public page, and reach existing signup or log in | —             | US-01    | done   |
+| S-02 | login-lands-in-app   | log in to the app (not “the dashboard”) and land in the app, not on the public page                       | —             | US-01    | ready  |
 
 ## Streams
 
@@ -81,7 +81,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** North star under `speed` / `time` — honest copy is enough; blocking on polished marketing would miss the one-week after-hours budget.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-02: Login lands in the app
 
@@ -128,4 +128,5 @@ Linear project: [Manager Pad](https://linear.app/maciej-zadworny/project/manager
 
 ## Done
 
+- **S-01: visitor can read what the app is and which problems it solves on the public main page, and can reach existing signup or log in to the app from that page** — Archived 2026-08-31 → `context/archive/2026-08-31-selling-landing-page/`. Lesson: —.
 - **S-04: user can open a person overview, select among that employee's meetings, read the selected note, and mark tasks complete or add new tasks from the side panel** — Archived 2026-08-31 → `context/archive/2026-08-15-person-overview-task-followup/`. Lesson: —.
