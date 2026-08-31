@@ -185,31 +185,31 @@ None. No schema, no session-format change, no data backfill. Existing cookies ke
 
 #### Automated
 
-- [x] 1.1 Sign-in success redirect is `/dashboard` (not `/`)
-- [x] 1.2 Error redirects still target `/auth/signin`
-- [x] 1.3 `export const prerender = false` is present on `signin.ts`
-- [x] 1.4 Lint passes: `npm run lint`
-- [x] 1.5 Build passes: `npm run build`
+- [x] 1.1 Sign-in success redirect is `/dashboard` (not `/`) — 9b7a81f
+- [x] 1.2 Error redirects still target `/auth/signin` — 9b7a81f
+- [x] 1.3 `export const prerender = false` is present on `signin.ts` — 9b7a81f
+- [x] 1.4 Lint passes: `npm run lint` — 9b7a81f
+- [x] 1.5 Build passes: `npm run build` — 9b7a81f
 
 #### Manual
 
-- [x] 1.6 Sign in from landing Log in → `/dashboard` with TeamList visible
-- [x] 1.7 Failed sign-in stays on `/auth/signin` with an error, no session
-- [x] 1.8 Sign out from `/dashboard` returns to guest `/`
-- [x] 1.9 Signed-in `/` still shows the landing; Topbar Open the app → `/dashboard`; no auto-bounce
-- [x] 1.10 Signed-in `/auth/signin` still shows the form (no bounce)
-- [x] 1.11 Team / people / meetings still work from `/dashboard`
+- [x] 1.6 Sign in from landing Log in → `/dashboard` with TeamList visible — 9b7a81f
+- [x] 1.7 Failed sign-in stays on `/auth/signin` with an error, no session — 9b7a81f
+- [x] 1.8 Sign out from `/dashboard` returns to guest `/` — 9b7a81f
+- [x] 1.9 Signed-in `/` still shows the landing; Topbar Open the app → `/dashboard`; no auto-bounce — 9b7a81f
+- [x] 1.10 Signed-in `/auth/signin` still shows the form (no bounce) — 9b7a81f
+- [x] 1.11 Team / people / meetings still work from `/dashboard` — 9b7a81f
 
 ### Phase 2: Agent conventions for post-login
 
 #### Automated
 
-- [ ] 2.1 AGENTS.md no longer defers post-login to `login-lands-in-app`
-- [ ] 2.2 AGENTS.md requires `/dashboard` after sign-in and forbids a signed-in bounce from `/`
-- [ ] 2.3 Middleware still leaves `/` public with no signed-in bounce
-- [ ] 2.4 Sign-out still redirects to `/`
-- [ ] 2.5 Lint passes: `npm run lint`
+- [x] 2.1 AGENTS.md no longer defers post-login to `login-lands-in-app`
+- [x] 2.2 AGENTS.md requires `/dashboard` after sign-in and forbids a signed-in bounce from `/`
+- [x] 2.3 Middleware still leaves `/` public with no signed-in bounce
+- [x] 2.4 Sign-out still redirects to `/`
+- [x] 2.5 Lint passes: `npm run lint`
 
 #### Manual
 
-- [ ] 2.6 Public-page section reads as live post-login-to-app rules, not an S-01 deferral
+- [x] 2.6 Public-page section reads as live post-login-to-app rules, not an S-01 deferral

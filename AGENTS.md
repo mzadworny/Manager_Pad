@@ -41,8 +41,8 @@ Prefer **UI-first** implementation phases for product features: interactive shel
 - Prefer Astro (not a React island) for selling/landing content unless a control truly needs client interactivity.
 - Signup from the landing page links to the existing signup path (`/auth/signup`). Do not add a second registration system.
 - Log-in from the landing page links to `/auth/signin`. Public-path language is log in to / open the app, not “the dashboard.”
-- Post-login destination (do not send a successful sign-in to `/`) is **not** this change — see `login-lands-in-app`.
-- Verify this flow in the browser. Do not add a test runner to cover it.
+- After login, the user must land in the app (`/dashboard`, not `/`). Do not send a successful sign-in to `/`. Do not redirect signed-in users away from `/`; a later visit to the public URL still shows the landing.
+- Verify this flow in the browser (open `/`, sign in, confirm `/dashboard`). Do not add a test runner to cover it.
 
 ## CI and Pull Requests
 
