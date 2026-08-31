@@ -1,10 +1,10 @@
 ---
 change_id: finalize-meeting-note
 title: Finalize meeting note
-status: implemented
+status: archived
 created: 2026-08-14
-updated: 2026-08-15
-archived_at: null
+updated: 2026-08-31
+archived_at: 2026-08-31T18:54:30Z
 linear_issue: MAC-7
 ---
 
