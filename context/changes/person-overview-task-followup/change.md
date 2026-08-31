@@ -1,9 +1,9 @@
 ---
 change_id: person-overview-task-followup
 title: Person overview and task follow-up
-status: implemented
+status: impl_reviewed
 created: 2026-08-15
-updated: 2026-08-23
+updated: 2026-08-29
 archived_at: null
 linear_issue: MAC-8
 ---
