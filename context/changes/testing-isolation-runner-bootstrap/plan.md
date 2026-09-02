@@ -387,24 +387,24 @@ No schema. Cloud data: only unique `iso-*` rows this suite creates, then soft-de
 
 #### Automated
 
-- [x] 3.1 Guest isolation file passes (401 + empty payloads; page 302; `/` not redirected)
-- [x] 3.2 Cross-manager file passes the matrix above plus A’s unchanged re-read
-- [x] 3.3 After a green run, A no longer GET-200s the unique fixture employee/team (cleanup)
-- [x] 3.4 Full `npm test` passes (unit + harness smoke + isolation)
+- [x] 3.1 Guest isolation file passes (401 + empty payloads; page 302; `/` not redirected) — 5022ddc
+- [x] 3.2 Cross-manager file passes the matrix above plus A’s unchanged re-read — 5022ddc
+- [x] 3.3 After a green run, A no longer GET-200s the unique fixture employee/team (cleanup) — 5022ddc
+- [x] 3.4 Full `npm test` passes (unit + harness smoke + isolation) — 5022ddc
 
 #### Manual
 
-- [x] 3.5 A’s dashboard after the suite does not show leftover `iso-*` people/teams from this run
-- [x] 3.6 Spot-check one failing assertion mentally: if B GET meeting returned 200 with notes, the test would fail (oracle is “no A payload,” not “status is 404 because the handler says so”)
+- [x] 3.5 A’s dashboard after the suite does not show leftover `iso-*` people/teams from this run — 5022ddc
+- [x] 3.6 Spot-check one failing assertion mentally: if B GET meeting returned 200 with notes, the test would fail (oracle is “no A payload,” not “status is 404 because the handler says so”) — 5022ddc
 
 ### Phase 4: Cookbook
 
 #### Automated
 
-- [ ] 4.1 `context/foundation/test-plan.md` §6.1, §6.2, and §6.3 no longer read “TBD — see §3 Phase 1”
-- [ ] 4.2 `npm test` still passes after doc-only edits
-- [ ] 4.3 `npm run lint` / Prettier on the touched markdown
+- [x] 4.1 `context/foundation/test-plan.md` §6.1, §6.2, and §6.3 no longer read “TBD — see §3 Phase 1”
+- [x] 4.2 `npm test` still passes after doc-only edits
+- [x] 4.3 `npm run lint` / Prettier on the touched markdown
 
 #### Manual
 
-- [ ] 4.4 Reading §6.2 alone is enough to know how to add a third-manager-style check for a new by-id route (cookie helper, 404, empty body, no 403)
+- [x] 4.4 Reading §6.2 alone is enough to know how to add a third-manager-style check for a new by-id route (cookie helper, 404, empty body, no 403)

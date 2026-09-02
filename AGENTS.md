@@ -29,7 +29,7 @@ Prefer `linear_issue` in commit `Refs:` lines. Skip Linear updates silently when
 
 ## Testing
 
-Vitest via `npm test`. Do not add a second framework. CI does not run tests yet (test-plan §3 Phase 3).
+Vitest via `npm test`. Do not add a second framework. How to add tests: @context/foundation/test-plan.md §6. CI does not run tests until rollout Phase 3 (test-plan §3). Isolation tests need two documented managers (@context/foundation/test-accounts.md) and a live app (`globalSetup` or `TEST_BASE_URL`).
 
 ## Planning preference
 

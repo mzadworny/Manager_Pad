@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-08-31
+> Last updated: 2026-09-02
 
 ## 1. Strategy
 
@@ -78,14 +78,14 @@ plus the MCP/tools actually exposed in the current session. If a useful docs
 or search MCP such as Context7 or Exa.ai is not available, say that instead
 of assuming access.
 
-| Layer                | Tool                      | Version                                           | Notes                                                                                                                                         |
-| -------------------- | ------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| unit + integration   | Vitest                    | none yet — see §3 Phase 1                         | Astro-documented runner. Pin a version that works with Astro 6 `getViteConfig` (Vitest ≥3.2 / 4.1 path; unfiltered config has a known crash). |
-| API mocking          | none yet — see §3 Phase 1 | n/a                                               | Prefer real auth cookies + product APIs over mocking internals. Mock only at the network edge if an external service is required.             |
-| e2e                  | Playwright                | none yet — see §3 Phase 2 if research requires it | Official Astro path: `webServer` + `npm run preview`. Do not add in Phase 1.                                                                  |
-| accessibility        | none yet                  | n/a                                               | Not a top risk; do not bootstrap here.                                                                                                        |
-| RLS / DB             | pgTAP                     | not default                                       | Official Supabase path, but local Docker is optional; default target is cloud. Do not make Phase 1 depend on `supabase start`.                |
-| (optional) AI-native | none                      | n/a                                               | Playwright MCP not in session; landing copy is §7. No vision review.                                                                          |
+| Layer                | Tool       | Version                                           | Notes                                                                                                                                                       |
+| -------------------- | ---------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| unit + integration   | Vitest     | 4.1.11 (`vitest` ^4.1.11)                         | HTTP integration uses `defineConfig` from `vitest/config`. Astro `getViteConfig` is deferred until a phase needs component tests (unfiltered config crash). |
+| API mocking          | none       | n/a                                               | Prefer real auth cookies + product APIs over mocking internals. Mock only at the network edge if an external service is required.                           |
+| e2e                  | Playwright | none yet — see §3 Phase 2 if research requires it | Official Astro path: `webServer` + `npm run preview`. Do not add in Phase 1.                                                                                |
+| accessibility        | none yet   | n/a                                               | Not a top risk; do not bootstrap here.                                                                                                                      |
+| RLS / DB             | pgTAP      | not default                                       | Official Supabase path, but local Docker is optional; default target is cloud. Do not make Phase 1 depend on `supabase start`.                              |
+| (optional) AI-native | none       | n/a                                               | Playwright MCP not in session; landing copy is §7. No vision review.                                                                                        |
 
 **Stack grounding tools (current session):**
 
@@ -114,15 +114,28 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.1 Adding a unit test
 
-TBD — see §3 Phase 1 for runner layout and naming.
+Put the file in `tests/unit/` as `*.test.ts`. Import `describe` / `it` / `expect` from `vitest` (globals are off). Do not import `astro:env/server` or `src/lib/supabase.ts` — those do not resolve inside Vitest. Path alias `@/*` → `src/*` works from tests. Run just units with `npx vitest run tests/unit` (no live app). `npm test` runs the whole suite, including integration.
 
 ### 6.2 Adding an isolation (authz/authn) integration test
 
-TBD — see §3 Phase 1 for manager-to-manager denial and guest empty-body pattern.
+Use two cookie jars from `signIn()` in `tests/helpers/session.ts` (form POST `/api/auth/signin`, `redirect: "manual"`, replay `Set-Cookie`). Credentials live in `.env` (`TEST_MANAGER_*`); see `context/foundation/test-accounts.md`. `globalSetup` starts or reuses `astro dev` at `TEST_BASE_URL` (default `http://localhost:4321`).
+
+For a new by-id route, as Manager B against A's id:
+
+- Expect **404** and **no** `employee` / `meeting` / `task` / `notesJson` payload — not 403. 403 means the All people system team, not “not your row.”
+- List-by-foreign-**employee** is the trap: `GET /api/meetings?employeeId=` and `GET /api/tasks?employeeId=` are **200** with an empty array. `GET /api/tasks?meetingId=` and `GET /api/employees?teamId=` are **404** when the parent is invisible.
+- Then as A, re-read the same ids and assert the row is unchanged.
+
+Guest (no `Cookie`): product GET + one mutating method → **401** `{ error: "Unauthorized" }` **and** parsed JSON must not contain populated `teams` / `employees` / `meetings` / `tasks` / `notesJson` / `notes`. Protected pages (`/dashboard`, `/employees`, `/meetings`) via HTTP `redirect: "manual"` → **302/303** whose `Location` path is `/auth/signin`. Do not use Playwright. Fixtures use unique `iso-<run>-…` names; Manager A soft-deletes the fixture employee (cascades meetings/tasks) then the unique team. Never delete All people.
 
 ### 6.3 Adding a test for a new API endpoint
 
-TBD — see §3 Phase 1: two-session ownership check + unauthenticated deny, not happy-path CRUD only.
+A new product API is not done with happy-path CRUD. Add:
+
+1. Guest deny: unauthenticated GET and one write → 401 and empty of notes/tasks/people (§6.2).
+2. Ownership: Manager B reads A's id and attempts one write (PATCH or DELETE). Expect 404 (or 200-empty if this is a list-by-employee endpoint) with no A's payload; A’s re-read is unchanged.
+
+Do not mock `requireApiAuth`, Supabase, or RLS. Do not treat UI hide as the proof.
 
 ### 6.4 Adding a capture or overview regression test
 
@@ -134,8 +147,7 @@ TBD — see §3 Phase 3.
 
 ### 6.6 Per-rollout-phase notes
 
-(Optional. After each phase lands, /10x-implement appends a 2-3 line note
-here capturing anything surprising the rollout phase taught.)
+- Isolation + runner bootstrap: form POST `/api/auth/signin` needs an `Origin` header matching the app origin, or Astro `checkOrigin` returns 403 before the handler. Capture cookies with `redirect: "manual"` so `Set-Cookie` is not dropped. Cross-manager is never 403; meetings/tasks listed by a foreign `employeeId` are 200-empty.
 
 ## 7. What We Deliberately Don't Test
 
@@ -149,7 +161,7 @@ contributors should respect these unless the underlying assumption changes.
 ## 8. Freshness Ledger
 
 - Strategy (§1–§5) last reviewed: 2026-08-31
-- Stack versions last verified: 2026-08-31
+- Stack versions last verified: 2026-09-02
 - AI-native tool references last verified: 2026-08-31
 
 Refresh (`/10x-test-plan --refresh`) when:
