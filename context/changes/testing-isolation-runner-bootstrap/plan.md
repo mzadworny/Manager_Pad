@@ -362,26 +362,26 @@ No schema. Cloud data: only unique `iso-*` rows this suite creates, then soft-de
 
 #### Automated
 
-- [x] 1.1 `npm test` (or `npx vitest run tests/unit`) passes with no `TEST_BASE_URL`, no manager env, and no listening app
-- [x] 1.2 `npm run lint` passes including `tests/` and `src/lib/protected-routes.ts`
-- [x] 1.3 `npm run build` still succeeds with existing `SUPABASE_*` env
+- [x] 1.1 `npm test` (or `npx vitest run tests/unit`) passes with no `TEST_BASE_URL`, no manager env, and no listening app — ae53ef0
+- [x] 1.2 `npm run lint` passes including `tests/` and `src/lib/protected-routes.ts` — ae53ef0
+- [x] 1.3 `npm run build` still succeeds with existing `SUPABASE_*` env — ae53ef0
 
 #### Manual
 
-- [x] 1.4 Terminal output from `npm test` shows the unit file ran and passed — the visible “runner home” done-state
+- [x] 1.4 Terminal output from `npm test` shows the unit file ran and passed — the visible “runner home” done-state — ae53ef0
 
 ### Phase 2: Two-session harness
 
 #### Automated
 
-- [ ] 2.1 `npm test` starts or reuses `astro dev` and the harness smoke passes when `.env` has both managers
-- [ ] 2.2 Missing `TEST_MANAGER_B_*` fails with an actionable message (not an uncaught 401)
-- [ ] 2.3 `npm run lint` still passes
+- [x] 2.1 `npm test` starts or reuses `astro dev` and the harness smoke passes when `.env` has both managers
+- [x] 2.2 Missing `TEST_MANAGER_B_*` fails with an actionable message (not an uncaught 401)
+- [x] 2.3 `npm run lint` still passes
 
 #### Manual
 
-- [ ] 2.4 Manager B can log in at `/auth/signin` on the local app against cloud Supabase (email confirmed)
-- [ ] 2.5 Both accounts are listed in `test-accounts.md` with purpose “isolation tests / Phase 1”
+- [x] 2.4 Manager B can log in at `/auth/signin` on the local app against cloud Supabase (email confirmed)
+- [x] 2.5 Both accounts are listed in `test-accounts.md` with purpose “isolation tests / Phase 1”
 
 ### Phase 3: Isolation proofs
 
