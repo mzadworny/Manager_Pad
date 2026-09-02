@@ -374,28 +374,28 @@ No schema. Cloud data: only unique `iso-*` rows this suite creates, then soft-de
 
 #### Automated
 
-- [x] 2.1 `npm test` starts or reuses `astro dev` and the harness smoke passes when `.env` has both managers
-- [x] 2.2 Missing `TEST_MANAGER_B_*` fails with an actionable message (not an uncaught 401)
-- [x] 2.3 `npm run lint` still passes
+- [x] 2.1 `npm test` starts or reuses `astro dev` and the harness smoke passes when `.env` has both managers — 3360f2c
+- [x] 2.2 Missing `TEST_MANAGER_B_*` fails with an actionable message (not an uncaught 401) — 3360f2c
+- [x] 2.3 `npm run lint` still passes — 3360f2c
 
 #### Manual
 
-- [x] 2.4 Manager B can log in at `/auth/signin` on the local app against cloud Supabase (email confirmed)
-- [x] 2.5 Both accounts are listed in `test-accounts.md` with purpose “isolation tests / Phase 1”
+- [x] 2.4 Manager B can log in at `/auth/signin` on the local app against cloud Supabase (email confirmed) — 3360f2c
+- [x] 2.5 Both accounts are listed in `test-accounts.md` with purpose “isolation tests / Phase 1” — 3360f2c
 
 ### Phase 3: Isolation proofs
 
 #### Automated
 
-- [ ] 3.1 Guest isolation file passes (401 + empty payloads; page 302; `/` not redirected)
-- [ ] 3.2 Cross-manager file passes the matrix above plus A’s unchanged re-read
-- [ ] 3.3 After a green run, A no longer GET-200s the unique fixture employee/team (cleanup)
-- [ ] 3.4 Full `npm test` passes (unit + harness smoke + isolation)
+- [x] 3.1 Guest isolation file passes (401 + empty payloads; page 302; `/` not redirected)
+- [x] 3.2 Cross-manager file passes the matrix above plus A’s unchanged re-read
+- [x] 3.3 After a green run, A no longer GET-200s the unique fixture employee/team (cleanup)
+- [x] 3.4 Full `npm test` passes (unit + harness smoke + isolation)
 
 #### Manual
 
-- [ ] 3.5 A’s dashboard after the suite does not show leftover `iso-*` people/teams from this run
-- [ ] 3.6 Spot-check one failing assertion mentally: if B GET meeting returned 200 with notes, the test would fail (oracle is “no A payload,” not “status is 404 because the handler says so”)
+- [x] 3.5 A’s dashboard after the suite does not show leftover `iso-*` people/teams from this run
+- [x] 3.6 Spot-check one failing assertion mentally: if B GET meeting returned 200 with notes, the test would fail (oracle is “no A payload,” not “status is 404 because the handler says so”)
 
 ### Phase 4: Cookbook
 
