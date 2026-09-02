@@ -68,6 +68,13 @@ const astroConfig = tseslint.config({
   },
 });
 
+const testsConfig = tseslint.config({
+  files: ["tests/**/*.{ts,tsx}"],
+  rules: {
+    "react-compiler/react-compiler": "off",
+  },
+});
+
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   baseConfig,
@@ -75,5 +82,6 @@ export default tseslint.config(
   eslintPluginAstro.configs["flat/recommended"],
   ...eslintPluginAstro.configs["flat/jsx-a11y-recommended"],
   astroConfig,
+  testsConfig,
   eslintPluginPrettier,
 );

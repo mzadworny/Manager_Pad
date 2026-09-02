@@ -29,7 +29,7 @@ Prefer `linear_issue` in commit `Refs:` lines. Skip Linear updates silently when
 
 ## Testing
 
-No test runner or `test` script yet. Do not invent a framework without a product decision; CI does not run tests.
+Vitest via `npm test`. Do not add a second framework. CI does not run tests yet (test-plan §3 Phase 3).
 
 ## Planning preference
 
