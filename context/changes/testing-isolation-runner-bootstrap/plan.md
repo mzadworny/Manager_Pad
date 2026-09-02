@@ -401,10 +401,10 @@ No schema. Cloud data: only unique `iso-*` rows this suite creates, then soft-de
 
 #### Automated
 
-- [x] 4.1 `context/foundation/test-plan.md` §6.1, §6.2, and §6.3 no longer read “TBD — see §3 Phase 1”
-- [x] 4.2 `npm test` still passes after doc-only edits
-- [x] 4.3 `npm run lint` / Prettier on the touched markdown
+- [x] 4.1 `context/foundation/test-plan.md` §6.1, §6.2, and §6.3 no longer read “TBD — see §3 Phase 1” — 5485425
+- [x] 4.2 `npm test` still passes after doc-only edits — 5485425
+- [x] 4.3 `npm run lint` / Prettier on the touched markdown — 5485425
 
 #### Manual
 
-- [x] 4.4 Reading §6.2 alone is enough to know how to add a third-manager-style check for a new by-id route (cookie helper, 404, empty body, no 403)
+- [x] 4.4 Reading §6.2 alone is enough to know how to add a third-manager-style check for a new by-id route (cookie helper, 404, empty body, no 403) — 5485425
