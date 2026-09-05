@@ -168,7 +168,7 @@ export function NotesEditor({
     [minHeightClass],
   );
 
-  // TipTap SSR: immediatelyRender false yields null until mounted; overload is easy to miss under eslint projectService.
+  // TipTap SSR: immediatelyRender false yields null until mounted.
   // Stable extensions/editorProps + empty deps avoid setOptions churn that can fight Backspace/Delete mid-edit.
   const editor = useEditor(
     {
@@ -182,7 +182,7 @@ export function NotesEditor({
       },
     },
     [],
-  ) as Editor | null;
+  );
 
   useEffect(() => {
     if (!editor) {

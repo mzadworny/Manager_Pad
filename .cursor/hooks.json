@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      { "command": ".cursor/hooks/format.sh", "timeout": 10 },
+      { "command": ".cursor/hooks/lint.sh", "timeout": 15 }
+    ],
+    "postToolUse": [
+      {
+        "command": ".cursor/hooks/typecheck.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 30
+      },
+      {
+        "command": ".cursor/hooks/related-tests.sh",
+        "matcher": "Write|StrReplace",
+        "timeout": 45
+      }
+    ]
+  }
+}

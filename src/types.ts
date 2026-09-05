@@ -20,8 +20,10 @@ export interface Employee {
 /** TipTap JSON document stored as meeting notes. Never null or `{}`. */
 export interface NotesJson {
   type: string;
-  content?: unknown[];
-  [key: string]: unknown;
+  content?: NotesJson[];
+  attrs?: Record<string, unknown>;
+  marks?: { type: string; attrs?: Record<string, unknown> }[];
+  text?: string;
 }
 
 export const EMPTY_NOTES_DOC: NotesJson = {

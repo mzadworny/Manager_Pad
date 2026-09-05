@@ -38,7 +38,9 @@ Read the plan file fully. Also read the sibling `plan-brief.md` in the same chan
 - **Decisions** and **assumptions** (explicit and implicit)
 - **Progress section** — the canonical `## Progress` block at the bottom of the plan (see `references/progress-format.md`)
 
-Before any code verification, check the plan against itself. These three scans often catch the highest-value issues — problems the plan author discovered but didn't fully follow through on:
+Before any code verification, check the plan against itself. These scans often catch the highest-value issues — problems the plan author discovered but didn't fully follow through on:
+
+- **Definition audit** (the plan against the *request*, not against itself): the plan must carry a `## Definitions` section (produced by `/10x-plan`'s requirements ledger). Missing → CRITICAL under Requirement Definition. Present → re-derive it: list every noun, quantity, selection, state and rule the request relies on and check each has a row. Then, for every row *and* for every sentence anywhere in the plan phrased as a guarantee, invariant, "always", "never", or "data guarantee", classify its origin yourself — user decision, product rule, or code artifact. A code artifact the requirement leans on (a tiebreak, a default, a sort order, a uniqueness that only the implementation supplies) is an undecided definition, not a fact: flag it, whatever the plan calls it. Do not accept the plan's own classification or its own example; the author, the interview and the code comment share the framing under test.
 
 - **Contradiction**: does Current State Analysis document a limitation the implementation ignores? (e.g., "npm doesn't run preuninstall for deps" yet phases rely on it) Do items from "What We're NOT Doing" reappear in phases? Does a phase assume a behavior elsewhere acknowledged as broken?
 - **Promise gap**: every capability promised in Desired End State / Success Criteria / Migration Notes should have a backing phase. If success criteria say "rate limiting works" but no phase builds it, the implementer hits a gap mid-build.
@@ -54,19 +56,20 @@ Before any code verification, check the plan against itself. These three scans o
 ## Step 2: Grounding
 
 Quick, no sub-agents:
-- **Paths**: Execute a shell command to list files (`ls -l`) on ≥5 file paths the plan claims to modify. Non-existent paths are critical.
-- **Symbols**: Execute a shell command to search for specific functions/config keys the plan references (`grep`).
+- **Paths**: list files in directories on ≥5 file paths the plan claims to modify. Non-existent paths are critical.
+- **Symbols**: search for specific functions/config keys the plan references.
 - **Brief↔plan consistency**: phases, decisions, scope match?
 
-Report inline: `Grounding: 5/5 paths ✓, 3/3 symbols ✓, brief↔plan ✓`. Only escalate to a finding on failure.
+Report inline: `Grounding: 5/5 paths ✓, 3/3 symbols ✓, brief↔plan ✓, definitions 7/9 user|product (2 flagged)`. Only escalate to a finding on failure. Never print a ✓ for a definition or invariant whose origin is the code.
 
 ## Step 3: Codebase verification (deep mode only)
 
 Skip if `--quick`.
 
-From Steps 1–2, identify the **3–5 riskiest claims** in the plan — things that, if wrong, force significant rework. Launch **one** sub-agent with three combined tasks:
+From Steps 1–2, identify the **3–5 riskiest claims** in the plan — things that, if wrong, force significant rework. Launch **one** sub-agent (`subagent_type: "general-purpose"`) with three combined tasks:
 
 1. **Verify the riskiest claims** against the actual code. For each: what does the code show, does it confirm or contradict the plan, with file:line evidence.
+1b. **Independent degenerate walkthrough**: build your own small dataset for the feature — do not reuse the plan's example — with two items equal on the value the user reasons about, a duplicate identity, an empty or single-item group, a boundary value, and a legacy or missing value. Walk the plan's behaviour on it step by step as the end user would see it, and for each step report what the code does today (file:line) and whether the plan decides the outcome. Any step that is undefined, or where a user would ask "why did it do that?", is a finding under Requirement Definition. Typical catches: the plan says "each customer has one active subscription" because a query takes the first row, but the walkthrough has a customer with two; the plan says "the latest invoice" but two invoices share a timestamp; the plan treats "overdue" as strictly after the due date while the notification copy says "due today".
 2. **Blast-radius sweep**: for functions, constants, or endpoints the plan modifies, search the codebase for other callers/importers not mentioned in the plan. These are files the plan doesn't know it's affecting.
 3. **Pattern check** (only if plan introduces new patterns): do existing files in the touched areas already solve this? Pattern proliferation is a common finding.
 
@@ -74,7 +77,10 @@ Give the sub-agent targeted questions with relevant file paths — don't dump th
 
 ## Step 4: Substance analysis
 
-Analyze the plan against five dimensions. Only produce findings for real issues — don't pad with "no issues found".
+Analyze the plan against six dimensions. Only produce findings for real issues — don't pad with "no issues found".
+
+### Requirement Definition
+Are the words in the request defined on real data, and did the *user* decide them? Findings from the Step 1 definition audit and the Step 3 walkthrough land here: a term with no `## Definitions` row, a definition whose only origin is the code, a "guarantee" the user never made, a degenerate case (tie, duplicate, empty, boundary, legacy) the plan is silent on, a definition with nothing in its "Verified by" column. This dimension fails before the others matter — a perfect plan for an undefined requirement is the expensive kind of wrong.
 
 ### End-State Alignment
 Walking phases sequentially, does the system reach the stated end state? Could all success criteria pass while the goal remains unmet? Any "last mile" gap where the plan does 90% and stops short?
@@ -88,6 +94,8 @@ Does this fit the existing system? New patterns where existing ones would work (
 ### Blind Spots
 What didn't the plan consider? Error paths (only happy path described?), rollback story (phase 3 fails — can we revert?), resource/cost impact (API calls, computational work — what does this cost at expected usage?), default value changes (a default that triples cost or time should be called out), testing gaps, security boundaries.
 
+Undefined words and code-only guarantees are **not** Blind Spots — they belong to Requirement Definition above. Keep this dimension for solution-side omissions.
+
 ### Plan Completeness
 Is the document actionable? File paths specific (not "somewhere in src/")? Changes at function/method level? Success criteria with runnable commands? TBDs, TODOs, or placeholder sections?
 
@@ -98,7 +106,7 @@ Each finding has:
 - **ID**: F1, F2, F3…
 - **Severity**: CRITICAL / WARNING / OBSERVATION (how bad if ignored)
 - **Impact**: LOW / MEDIUM / HIGH (how much focus the decision needs)
-- **Dimension**: one of End-State Alignment / Lean Execution / Architectural Fitness / Blind Spots / Plan Completeness
+- **Dimension**: one of Requirement Definition / End-State Alignment / Lean Execution / Architectural Fitness / Blind Spots / Plan Completeness
 - **Title**: one line
 - **Location**: plan section or phase
 - **Detail**: what's wrong with evidence — plan's claim vs. what's actually true, or what's missing
@@ -135,7 +143,7 @@ Each dimension: **PASS** / **WARNING** / **FAIL**.
 
 - **SOUND** — safe to implement. All PASS, or PASS with minor warnings.
 - **REVISE** — needs targeted fixes. Multiple warnings or 1 non-critical FAIL.
-- **RETHINK** — fundamental problems. Multiple FAILs or wrong approach.
+- **RETHINK** — fundamental problems. Multiple FAILs, wrong approach, or Requirement Definition FAIL (an undefined requirement cannot be implemented correctly by accident).
 
 Sort findings by severity: CRITICAL → WARNING → OBSERVATION. Cap at 10 — consolidate related findings if you have more.
 
@@ -150,6 +158,7 @@ Plain text, box-drawing. Findings grouped by severity; omit empty groups. PASS d
   Findings: [N critical] [N warnings] [N observations]
 ═══════════════════════════════════════════════════════════
 
+  Requirement Definition PASS    ✅
   End-State Alignment    PASS    ✅
   Lean Execution         WARNING ⚠️   (1 finding)
   Architectural Fitness  PASS    ✅
@@ -240,10 +249,11 @@ Plain text, box-drawing. Findings grouped by severity; omit empty groups. PASS d
 
 Then ask:
 
-Ask the user: "Plan review complete. How would you like to proceed?" with options:
-  - "Triage findings" (description: "Walk through each finding and decide.")
-  - "Save report & triage later" (description: "Save the full report. Resume with /10x-plan-review <report-path>.")
-  - "Save report only" (description: "Save and finish — I'll handle the findings myself.")
+Ask the user: "Plan review complete. How would you like to proceed?"
+Options:
+  - "Triage findings" - "Walk through each finding and decide."
+  - "Save report & triage later" - "Save the full report. Resume with /10x-plan-review <report-path>."
+  - "Save report only" - "Save and finish — I'll handle the findings myself."
 
 ### Saving the report
 
@@ -262,7 +272,8 @@ Save to `context/changes/<change-id>/reviews/plan-review.md` (one plan-review pe
 ## Verdicts
 
 | Dimension | Verdict |
-|-----------|---------|
+|-----------|---------
+| Requirement Definition | PASS/WARNING/FAIL |
 | End-State Alignment | PASS/WARNING/FAIL |
 | Lean Execution | PASS/WARNING/FAIL |
 | Architectural Fitness | PASS/WARNING/FAIL |
@@ -320,19 +331,20 @@ If entered via saved file: read it, parse `### F` headers, filter to `Decision: 
 Walk findings in severity order (CRITICAL → WARNING → OBSERVATION). For each:
 
 **With 2 fix options:**
-Ask the user: "F[N] — [title]\n\nSeverity: [sev icon] [SEV]\nImpact: [impact icon] [LEVEL] — [meaning]\nDimension: [dim]\nLocation: [loc]\n\nDetail: [detail]\n\n[Fix A block]\n\n[Fix B block]" with options:
-  - "Apply Fix A ⭐" (description: "[Fix A one-liner]")
-  - "Apply Fix B" (description: "[Fix B one-liner]")
-  - "Fix differently" (description: "Different approach — let's discuss.")
-  - "Skip" (description: "Not worth addressing now.")
-  - "Accept risk" (description: "Understood — I'll handle during implementation.")
-  - "Disagree" (description: "Not actually an issue — dismiss.")
+Ask the user: "F[N] — [title]\n\nSeverity: [sev icon] [SEV]\nImpact: [impact icon] [LEVEL] — [meaning]\nDimension: [dim]\nLocation: [loc]\n\nDetail: [detail]\n\n[Fix A block]\n\n[Fix B block]"
+Options:
+  - "Apply Fix A ⭐" - "[Fix A one-liner]"
+  - "Apply Fix B" - "[Fix B one-liner]"
+  - "Fix differently" - "Different approach — let's discuss."
+  - "Skip" - "Not worth addressing now."
+  - "Accept risk" - "Understood — I'll handle during implementation."
+  - "Disagree" - "Not actually an issue — dismiss."
 
 **With 1 fix option:** same options, but replace "Apply Fix A/B" with a single "Fix in plan".
 
 **Handling responses:**
-- **Apply Fix A/B / Fix in plan**: show the exact plan edit (before/after). Brief confirmation, then apply the edit to the plan file. Mark FIXED (record which fix, e.g. "Fixed via Fix A").
-- **Fix differently**: ask the preferred approach, apply the edit to the plan file, mark FIXED.
+- **Apply Fix A/B / Fix in plan**: show the exact plan edit (before/after). Brief confirmation, then apply. Mark FIXED (record which fix, e.g. "Fixed via Fix A").
+- **Fix differently**: ask the preferred approach, apply, mark FIXED.
 - **Skip** → SKIPPED. **Accept risk** → ACCEPTED. **Disagree** → DISMISSED. Move on, don't argue.
 
 After each decision, if working from a saved file, update its `Decision:` field.
