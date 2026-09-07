@@ -187,24 +187,24 @@ No schema. Cloud data: A’s unique fixtures as today, plus B’s unique person 
 
 #### Automated
 
-- [x] 1.1 `npx vitest run tests/integration/cross-manager-isolation.test.ts` passes the new rows plus the existing matrix
-- [x] 1.2 Full `npm test` still passes (unit + harness smoke + guest + cross-manager)
-- [x] 1.3 `npm run lint` passes including `tests/`
+- [x] 1.1 `npx vitest run tests/integration/cross-manager-isolation.test.ts` passes the new rows plus the existing matrix — 004ac88
+- [x] 1.2 Full `npm test` still passes (unit + harness smoke + guest + cross-manager) — 004ac88
+- [x] 1.3 `npm run lint` passes including `tests/` — 004ac88
 
 #### Manual
 
-- [x] 1.4 A’s dashboard after the suite does not show leftover `iso-*` people/teams from this run
-- [x] 1.5 Signed in as B, people list does not show leftover `iso-*` stamp-attack person
-- [x] 1.6 Spot-check: if B’s task GET returned A’s `meetingId` as `completedMeetingId`, the test would fail (oracle is “no A meeting on B’s task,” not “status is 404 because the handler says so”)
+- [x] 1.4 A’s dashboard after the suite does not show leftover `iso-*` people/teams from this run — 004ac88
+- [x] 1.5 Signed in as B, people list does not show leftover `iso-*` stamp-attack person — 004ac88
+- [x] 1.6 Spot-check: if B’s task GET returned A’s `meetingId` as `completedMeetingId`, the test would fail (oracle is “no A meeting on B’s task,” not “status is 404 because the handler says so”) — 004ac88
 
 ### Phase 2: Cookbook stamp + create-on-foreign-person
 
 #### Automated
 
-- [ ] 2.1 `context/foundation/test-plan.md` §6.2 names create-on-foreign-`employeeId` and own-row + foreign stamp
-- [ ] 2.2 `npm test` still passes after doc-only edits
-- [ ] 2.3 Prettier on the touched markdown (`npm run format` scoped to that file, or the repo format command already used for markdown)
+- [x] 2.1 `context/foundation/test-plan.md` §6.2 names create-on-foreign-`employeeId` and own-row + foreign stamp
+- [x] 2.2 `npm test` still passes after doc-only edits
+- [x] 2.3 Prettier on the touched markdown (`npm run format` scoped to that file, or the repo format command already used for markdown)
 
 #### Manual
 
-- [ ] 2.4 Reading §6.2 alone is enough to know why “PATCH A’s task with A’s meeting id” is the wrong F1 test and what to send instead
+- [x] 2.4 Reading §6.2 alone is enough to know why “PATCH A’s task with A’s meeting id” is the wrong F1 test and what to send instead

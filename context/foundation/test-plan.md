@@ -124,6 +124,8 @@ For a new by-id route, as Manager B against A's id:
 
 - Expect **404** and **no** `employee` / `meeting` / `task` / `notesJson` payload — not 403. 403 means the All people system team, not “not your row.”
 - List-by-foreign-**employee** is the trap: `GET /api/meetings?employeeId=` and `GET /api/tasks?employeeId=` are **200** with an empty array. `GET /api/tasks?meetingId=` and `GET /api/employees?teamId=` are **404** when the parent is invisible.
+- Create-on-foreign-`employeeId` is **404** with no payload, not 200-empty: `POST /api/meetings` and floating `POST /api/tasks` with a foreign `employeeId`.
+- A `completedMeetingId` (or similar FK stamp) check must PATCH **the caller’s own row** with the other manager’s id. PATCH on the foreign row 404s before the lookup and does not prove the stamp gate.
 - Then as A, re-read the same ids and assert the row is unchanged.
 
 Guest (no `Cookie`): product GET + one mutating method → **401** `{ error: "Unauthorized" }` **and** parsed JSON must not contain populated `teams` / `employees` / `meetings` / `tasks` / `notesJson` / `notes`. Protected pages (`/dashboard`, `/employees`, `/meetings`) via HTTP `redirect: "manual"` → **302/303** whose `Location` path is `/auth/signin`. Do not use Playwright. Fixtures use unique `iso-<run>-…` names; Manager A soft-deletes the fixture employee (cascades meetings/tasks) then the unique team. Never delete All people.
@@ -148,6 +150,7 @@ TBD — see §3 Phase 3.
 ### 6.6 Per-rollout-phase notes
 
 - Isolation + runner bootstrap: form POST `/api/auth/signin` needs an `Origin` header matching the app origin, or Astro `checkOrigin` returns 403 before the handler. Capture cookies with `redirect: "manual"` so `Set-Cookie` is not dropped. Cross-manager is never 403; meetings/tasks listed by a foreign `employeeId` are 200-empty.
+- High-signal write proofs: B-owned stamp-attack person uses `teamId: null` (All people; do not assign to the system team). Stamp body needs non-null `completedAt` plus the foreign meeting id.
 
 ## 7. What We Deliberately Don't Test
 
