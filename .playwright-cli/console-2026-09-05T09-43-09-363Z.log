@@ -1,0 +1,38 @@
+[   14583ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:4321/auth/signin:0
+[   14886ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:4321/node_modules/.vite/deps/chunk-7ABT2BKE.js?v=a74d4101:20102
+[   23829ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:4321/node_modules/.vite/deps/chunk-7ABT2BKE.js?v=a74d4101:20102
+[   26496ms] [ERROR] In HTML, %s cannot be a descendant of <%s>.
+This will cause a hydration error.%s <button> button 
+
+  <TeamList>
+    <div className="mx-auto w-...">
+      <div>
+      <div className="grid gap-6...">
+        <div className="space-y-3">
+          <button>
+>         <button
+>           type="button"
+>           onClick={function onClick}
+>           className="w-full rounded-lg border p-4 text-left transition border-white/10 bg-white/5 hover:bg-white/10"
+>         >
+            <div className="flex items...">
+              <div>
+              <div className="flex items...">
+                <Button type="button" variant="ghost" size="icon" onClick={function onClick} aria-label="Edit Alpha">
+>                 <button
+>                   data-slot="button"
+>                   className={"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm fo..."}
+>                   type="button"
+>                   onClick={function onClick}
+>                   aria-label="Edit Alpha"
+>                 >
+                ...
+          ...
+        ...
+      ...
+ @ http://localhost:4321/node_modules/.vite/deps/chunk-7ABT2BKE.js?v=a74d4101:2155
+[   26497ms] [ERROR] <%s> cannot contain a nested %s.
+See this log for the ancestor stack trace. button <button> @ http://localhost:4321/node_modules/.vite/deps/chunk-7ABT2BKE.js?v=a74d4101:2162
+[   31223ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:4321/node_modules/.vite/deps/chunk-7ABT2BKE.js?v=a74d4101:20102
+[   45843ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:4321/node_modules/.vite/deps/chunk-7ABT2BKE.js?v=a74d4101:20102
+[   55174ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:4321/node_modules/.vite/deps/chunk-7ABT2BKE.js?v=a74d4101:20102

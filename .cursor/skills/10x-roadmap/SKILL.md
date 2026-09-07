@@ -38,14 +38,14 @@ The skill is **AI-native** in four concrete ways: (1) it expresses ordering as a
 
 **Use when**: the user wants to open a milestone and decompose it (typical first source: a non-trivial `context/foundation/prd.md` with FRs and user stories populated), check milestone/roadmap status, or close a finished milestone and open the next. Typical triggers: just finished `/10x-prd`, just finished bootstrap, returning to a project and asking "what's next", or all roadmap slices have been archived.
 
-**Skip when**: the PRD is hollow (large `## Open Questions`, `# TODO: domain rule`) — point at `/10x-prd` (or upstream `/10x-shape`) first; a roadmap from a hollow PRD will inherit the hollowness. Also skip when the user wants to plan a *single* change in detail — that's `/10x-plan`. The roadmap is plural; the plan is singular.
+**Skip when**: the PRD is hollow (large `## Open Questions`, `# TODO: domain rule`) — point at `/10x-prd` (or upstream `/10x-shape`) first; a roadmap from a hollow PRD will inherit the hollowness. Also skip when the user wants to plan a _single_ change in detail — that's `/10x-plan`. The roadmap is plural; the plan is singular.
 
 ## Relationship to other skills
 
 - `/10x-shape` and `/10x-prd` — produce the upstream PRD this skill consumes. If `shape-notes.md` carries a `## Forward: technical-roadmap` block (where shape parks roadmap-bound content), this skill lifts it.
 - `10x-tech-stack-selector` — runs between `/10x-prd` and this skill in the bootstrap chain. If `context/foundation/tech-stack.md` exists, this skill reads it as input to derive `## Foundations` (auth scaffold, deploy skeleton, observability — anything the tech-stack-selection step implied) and to short-circuit baseline probes for layers already declared.
 - `/10x-plan` — downstream consumer. The user picks a roadmap item and invokes `/10x-plan <change-id>`; that skill creates the change folder, produces a detailed plan, and flips the matched roadmap item's `Status` to `planning`. The roadmap does NOT pre-create change folders; one slice can spawn multiple changes when `/10x-plan` discovers that the item is still too broad (only the first advances the shared item's status).
-- `/10x-implement` (and its autonomous sibling `/10x-goal-implement`) — further downstream. When implementation *starts* on a change whose `Change ID` matches a roadmap item, it flips that item's `Status` to `in-progress` — the open-work counterpart to `/10x-archive`'s `done` flip. This skill itself still emits only `proposed` / `ready` / `blocked` on generation; the intermediate lifecycle states (`planning`, `in-progress`) are now written downstream as the change moves through plan → implement. Every downstream flip matches by `Change ID`, is best-effort (a no-match is a silent skip), and is forward-only (never regresses a more-advanced status).
+- `/10x-implement` (and its autonomous sibling `/10x-goal-implement`) — further downstream. When implementation _starts_ on a change whose `Change ID` matches a roadmap item, it flips that item's `Status` to `in-progress` — the open-work counterpart to `/10x-archive`'s `done` flip. This skill itself still emits only `proposed` / `ready` / `blocked` on generation; the intermediate lifecycle states (`planning`, `in-progress`) are now written downstream as the change moves through plan → implement. Every downstream flip matches by `Change ID`, is best-effort (a no-match is a silent skip), and is forward-only (never regresses a more-advanced status).
 - `/10x-archive` — closes the loop at the end. When a change whose `Change ID` matches a roadmap item is archived, `/10x-archive` flips that item's `Status` to `done` (in `## At a glance` and in the item's body block) and appends an entry to `## Done`. This skill never pre-populates `## Done`; `/10x-archive` is its sole writer.
 - `/10x-frame`, `/10x-research` — orthogonal. They operate on a single change, not the roadmap.
 
@@ -69,13 +69,13 @@ When this skill is invoked, dispatch BEFORE doing any decomposition work:
 
 ## Interactive prompts — host-agnostic
 
-Whenever the procedure says *"ask the user"*, use whatever structured interactive-question tool the host agent exposes (on other hosts, any tool that asks the user a question with labelled options). If none is available, fall back to a plain conversational message listing the labelled options — do not block the procedure. State which tool you selected (or that you fell back to plain chat) the first time you ask, so the user can correct you.
+Whenever the procedure says _"ask the user"_, use whatever structured interactive-question tool the host agent exposes. If none is available, fall back to a plain conversational message listing the labelled options — do not block the procedure. State which tool you selected (or that you fell back to plain chat) the first time you ask, so the user can correct you.
 
 Question blocks appear in Steps 1, 3, 4, 5, and 9 and in the milestone transitions of `references/milestone-state.md` — short structured choices. Step 5 asks each anchor as its own structured question; its synthesis recap is plain markdown (no extra question).
 
 ## Parallel baseline research — host-agnostic
 
-Whenever the procedure says to use subagents or run parallel probes, use whatever background-research / task-spawn tool the host exposes (on other hosts, any tool that spawns an isolated agent and returns a summary), fanning the probes out in one batched call. If none exists, run the same probes sequentially in the main context. Either path must return the same baseline summary shape with file evidence.
+Whenever the procedure says to use subagents or run parallel probes, use whatever background-research / task-spawn tool the host exposes, fanning the probes out in one batched call. If none exists, run the same probes sequentially in the main context. Either path must return the same baseline summary shape with file evidence.
 
 ## Process
 
@@ -83,16 +83,20 @@ Whenever the procedure says to use subagents or run parallel probes, use whateve
 
 **When opening a milestone** (first launch or next-milestone transition from `references/milestone-state.md`), ask what the milestone should be built from — do not assume, but Recommend the PRD:
 
-Ask the user: "What are the source materials for this milestone?"
-Options:
-- PRD at context/foundation/prd.md (Recommended)
-  Description: The standard path: milestone scoped from the PRD's FRs and user stories. Run /10x-prd first if it doesn't exist yet.
-- Other document(s) — I'll give paths
-  Description: Specs, briefs, research docs. Slices will trace to their content, recorded as scope anchors in the milestone charter.
-- I'll describe the milestone myself
-  Description: Free-form description, no document. I'll distill it into MS-NN scope anchors that slices trace to.
-- Cancel
-  Description: Exit without changes.
+Ask the user:
+
+- question: "What are the source materials for this milestone?"
+  header: "Sources"
+  options:
+  - label: "PRD at context/foundation/prd.md (Recommended)"
+    description: "The standard path: milestone scoped from the PRD's FRs and user stories. Run /10x-prd first if it doesn't exist yet."
+  - label: "Other document(s) — I'll give paths"
+    description: "Specs, briefs, research docs. Slices will trace to their content, recorded as scope anchors in the milestone charter."
+  - label: "I'll describe the milestone myself"
+    description: "Free-form description, no document. I'll distill it into MS-NN scope anchors that slices trace to."
+  - label: "Cancel"
+    description: "Exit without changes."
+    multiSelect: false
 
 For subsequent milestones, `references/milestone-state.md` refines these options (updated PRD vs next tranche of the same PRD). When the invocation carried an explicit path argument, skip the question and use that path.
 
@@ -104,16 +108,18 @@ test -f "<resolved-path>"
 
 If a file exists, **read it FULLY** (no `limit`/`offset`). If the user chose self-description, capture their description verbatim instead — it becomes the `## Milestone` charter with numbered `MS-NN` scope anchors, and Steps 3's PRD-readiness check is replaced by an anchor check (< 2 distillable `MS-NN` anchors → ask the user to firm up the description, then STOP if they can't).
 
-If a named file does not exist, ask with the selected interactive-question tool:
+If a named file does not exist, ask the user:
 
-Ask the user: "No source found at `<resolved-path>`. How would you like to proceed?"
-Options:
-- Run /10x-prd first (Recommended)
-  Description: Stop here. Run /10x-prd to produce prd.md, then re-invoke /10x-roadmap.
-- Provide a different path
-  Description: I'll wait for you to give me the path.
-- Cancel
-  Description: Exit without changes.
+- question: "No source found at `<resolved-path>`. How would you like to proceed?"
+  header: "Input?"
+  options:
+  - label: "Run /10x-prd first (Recommended)"
+    description: "Stop here. Run /10x-prd to produce prd.md, then re-invoke /10x-roadmap."
+  - label: "Provide a different path"
+    description: "I'll wait for you to give me the path."
+  - label: "Cancel"
+    description: "Exit without changes."
+    multiSelect: false
 
 On "Run /10x-prd first": print the redirect message and STOP.
 
@@ -164,16 +170,18 @@ state — the roadmap surfaces what's blocking — but if you have time to firm
 up the PRD first, the resulting roadmap will be substantially more actionable.
 ```
 
-Then ask with the selected interactive-question tool:
+Then ask the user:
 
-Ask the user: "How would you like to proceed?"
-Options:
-- Firm up PRD first (Recommended)
-  Description: Stop here. Resolve PRD's Open Questions / TODOs, then re-invoke /10x-roadmap.
-- Proceed anyway
-  Description: Generate from what's there. Hollow areas surface as blocked slices with PRD gap as their Unknown.
-- Cancel
-  Description: Exit without changes.
+- question: "How would you like to proceed?"
+  header: "Thin PRD"
+  options:
+  - label: "Firm up PRD first (Recommended)"
+    description: "Stop here. Resolve PRD's Open Questions / TODOs, then re-invoke /10x-roadmap."
+  - label: "Proceed anyway"
+    description: "Generate from what's there. Hollow areas surface as blocked slices with PRD gap as their Unknown."
+  - label: "Cancel"
+    description: "Exit without changes."
+    multiSelect: false
 
 On "Firm up PRD first": print the redirect and STOP. On "Proceed anyway": continue with the score recorded so Step 6 can flag thin areas.
 
@@ -183,14 +191,14 @@ The "what's already in place" assessment shouldn't fall on the user — the code
 
 **Layers to probe** (skip a layer if `tech-stack.md` already names that layer's choice — report "per tech-stack.md: <choice>" instead of probing):
 
-| Layer | What the probe looks for |
-|---|---|
-| Frontend | UI framework, build tooling, routing, component libraries — `package.json` deps, framework config files |
-| Backend / API | Server framework, API routes, request handlers — entrypoints, route files, controllers |
-| Data | DB driver, ORM/query builder, schema/migration tooling, seeded data — schema files, migration directories |
-| Auth | Auth provider integration, session/token handling, auth middleware — auth config, middleware files |
+| Layer          | What the probe looks for                                                                                          |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Frontend       | UI framework, build tooling, routing, component libraries — `package.json` deps, framework config files           |
+| Backend / API  | Server framework, API routes, request handlers — entrypoints, route files, controllers                            |
+| Data           | DB driver, ORM/query builder, schema/migration tooling, seeded data — schema files, migration directories         |
+| Auth           | Auth provider integration, session/token handling, auth middleware — auth config, middleware files                |
 | Deploy / infra | Hosting target, container config, CI/CD workflows, infra-as-code — `Dockerfile`, `.github/workflows`, deploy YAML |
-| Observability | Logging library, error tracking, metrics, dashboards — sentry/datadog/otel imports, log middleware |
+| Observability  | Logging library, error tracking, metrics, dashboards — sentry/datadog/otel imports, log middleware                |
 
 **Run all probes in one batched delegation when the host supports it.** Each prompt is short and self-contained; delegated agents return only a paragraph each, so the main context stays small. Example for Auth:
 
@@ -213,51 +221,60 @@ Codebase baseline (auto-researched):
 
 Then confirm:
 
-Ask the user: "Does this baseline match your understanding? Anything to correct or add before it informs Foundations?"
-Options:
-- Looks right — proceed
-  Description: Use this baseline as input for Foundations and the roadmap's ## Baseline section.
-- Correct one or more layers — I'll explain
-  Description: Free-form correction. I'll re-record the layer(s) before proceeding.
-- Add something not listed
-  Description: Free-form. Things the probes missed (planned-but-not-wired, scaffold from another repo, etc.).
+Ask the user:
+
+- question: "Does this baseline match your understanding? Anything to correct or add before it informs Foundations?"
+  header: "Baseline"
+  options:
+  - label: "Looks right — proceed"
+    description: "Use this baseline as input for Foundations and the roadmap's ## Baseline section."
+  - label: "Correct one or more layers — I'll explain"
+    description: "Free-form correction. I'll re-record the layer(s) before proceeding."
+  - label: "Add something not listed"
+    description: "Free-form. Things the probes missed (planned-but-not-wired, scaffold from another repo, etc.)."
+    multiSelect: true
 
 Save the confirmed baseline. It feeds Step 6a (Foundations) directly: **present** layers → Foundations skips them; **absent** or **partial** → Foundations slot opens. It also feeds the roadmap's `## Baseline` section verbatim.
 
 ### Step 5: Lean interview — 2-3 anchor questions, each with a strong Recommend
 
-The PRD captures the **product**. The baseline (Step 4) captures **what already exists**. This step produces the roadmap's framing — `main_goal`, `north_star`, investment areas, `top_blocker` — through a capped interview: at most **three anchor questions**, each carrying one strong **Recommend** grounded in a quoted artifact line plus 1-2 alternatives with a one-line "why this is also reasonable" rationale. The user picks the Recommend, picks an alternative, or overrides freely; investment areas are *derived* from the answers, not asked. This is the sweet spot between the two failure modes the skill has lived through: **silent auto-framing** (deciding load-bearing calls without a human gate) and **unbounded discovery** (asking what the artifacts already answer). If `shape-notes.md` carried a `## Forward: technical-roadmap` block, feed it into the Recommends — don't re-elicit content the user already parked there. If an anchor is still undecided when the cap is hit, **make the call** using the Recommend, record it in frontmatter with a one-line rationale, and proceed — the user can override at any point.
+The PRD captures the **product**. The baseline (Step 4) captures **what already exists**. This step produces the roadmap's framing — `main_goal`, `north_star`, investment areas, `top_blocker` — through a capped interview: at most **three anchor questions**, each carrying one strong **Recommend** grounded in a quoted artifact line plus 1-2 alternatives with a one-line "why this is also reasonable" rationale. The user picks the Recommend, picks an alternative, or overrides freely; investment areas are _derived_ from the answers, not asked. This is the sweet spot between the two failure modes the skill has lived through: **silent auto-framing** (deciding load-bearing calls without a human gate) and **unbounded discovery** (asking what the artifacts already answer). If `shape-notes.md` carried a `## Forward: technical-roadmap` block, feed it into the Recommends — don't re-elicit content the user already parked there. If an anchor is still undecided when the cap is hit, **make the call** using the Recommend, record it in frontmatter with a one-line rationale, and proceed — the user can override at any point.
 
 **5a. Infer recommendations and the alternatives that are actually reasonable.**
 
-For each anchor below, derive *both* the Recommend AND the alternatives — grounded in specific quotes from PRD frontmatter / `## Vision` / `## Success Criteria` / `## NFRs` / `## Open Questions` / baseline / `tech-stack.md`. An alternative is "reasonable" only if a real signal in the artifacts supports it OR it is a common, defensible default for the product shape. **Do not list strawmen.** If only one value is plausible (no real alternative supportable from the artifacts), say so — that anchor will be presented with a single Recommend and an "override in your own words" fallback option.
+For each anchor below, derive _both_ the Recommend AND the alternatives — grounded in specific quotes from PRD frontmatter / `## Vision` / `## Success Criteria` / `## NFRs` / `## Open Questions` / baseline / `tech-stack.md`. An alternative is "reasonable" only if a real signal in the artifacts supports it OR it is a common, defensible default for the product shape. **Do not list strawmen.** If only one value is plausible (no real alternative supportable from the artifacts), say so — that anchor will be presented with a single Recommend and an "override in your own words" fallback option.
 
-- **`main_goal`** — pick from `market-feedback` | `quality` | `low-complexity` | `speed` | `learn` | `other`. Signals: `timeline_budget` (tight → speed or low-complexity), `target_scale` (small → low-complexity; mass-market → quality), Success Criteria phrasing ("learn from real users" → market-feedback; "validate the riskiest assumption" → market-feedback; "no incidents at launch" → quality), Vision tone (exploratory hobby → learn; hard deadline → speed). Alternatives are *adjacent* values that the same evidence could reasonably support — e.g., `market-feedback` and `speed` often coexist when the PRD says "ship to learn fast".
+- **`main_goal`** — pick from `market-feedback` | `quality` | `low-complexity` | `speed` | `learn` | `other`. Signals: `timeline_budget` (tight → speed or low-complexity), `target_scale` (small → low-complexity; mass-market → quality), Success Criteria phrasing ("learn from real users" → market-feedback; "validate the riskiest assumption" → market-feedback; "no incidents at launch" → quality), Vision tone (exploratory hobby → learn; hard deadline → speed). Alternatives are _adjacent_ values that the same evidence could reasonably support — e.g., `market-feedback` and `speed` often coexist when the PRD says "ship to learn fast".
 
-- **`north_star`** — the smallest end-to-end user-visible flow that, if shipped first, proves the core hypothesis of the PRD's Vision. Usually traces to a high-priority US-NN AND the primary Success Criterion. Reasonable alternatives are *other* candidate slices that also trace to the primary Success Criterion or to a high-priority US-NN, with fewer Prerequisites or with different sequencing consequences. When more than three candidates exist, present the top three.
+- **`north_star`** — the smallest end-to-end user-visible flow that, if shipped first, proves the core hypothesis of the PRD's Vision. Usually traces to a high-priority US-NN AND the primary Success Criterion. Reasonable alternatives are _other_ candidate slices that also trace to the primary Success Criterion or to a high-priority US-NN, with fewer Prerequisites or with different sequencing consequences. When more than three candidates exist, present the top three.
 
-- **`top_blocker`** — pick from `skills` | `capacity` | `time` | `decisions` | `external` | `motivation` | `none`. Signals: ≥ 3 unresolved PRD `## Open Questions` → `decisions`; ambitious scope vs `timeline_budget` mismatch → `time` or `capacity`; vendor dependency named in PRD that's not yet contracted → `external`; tech-stack lists a layer the team has never shipped → `skills`; none fire → `none`. Reasonable alternatives are *adjacent* blocker types that fire on similar signals — e.g., `time` and `capacity` often both fire on scope-vs-deadline tension.
+- **`top_blocker`** — pick from `skills` | `capacity` | `time` | `decisions` | `external` | `motivation` | `none`. Signals: ≥ 3 unresolved PRD `## Open Questions` → `decisions`; ambitious scope vs `timeline_budget` mismatch → `time` or `capacity`; vendor dependency named in PRD that's not yet contracted → `external`; tech-stack lists a layer the team has never shipped → `skills`; none fire → `none`. Reasonable alternatives are _adjacent_ blocker types that fire on similar signals — e.g., `time` and `capacity` often both fire on scope-vs-deadline tension.
 
 - **Investment areas** (NOT asked — derived in 5d) — for each of `frontend`, `backend`, `data`, `infra`: decide `invest deeply` vs `go simple`. Signals: PRD NFRs that gate launch in a layer (privacy / latency / correctness → invest there), baseline gaps that map to PRD must-haves (auth absent + multi-user must-have → invest in auth), Open Questions concentrated in one layer (decisions unresolved there → invest), and the chosen `main_goal` (`quality` boosts privacy/observability layers; `learn` boosts the unfamiliar layer; `speed` / `low-complexity` keeps everything simple by default). Do NOT promote a layer to "invest" without naming the PRD/baseline/main_goal signal.
 
-**5b. Skip an anchor only when the artifact is unambiguous.** If PRD frontmatter or Success Criteria *literally states* the value (e.g., `timeline_budget: "1 week to ship"` plus "we need to launch before X" → `main_goal: speed`), skip that question and announce the skip with the chosen value and the quote that locks it. Never skip when any plausible alternative exists — the user's confirmation on a real choice is worth more than the seconds saved. In practice you will usually ask 2-3 questions; you may ask fewer, but NEVER more than 3.
+**5b. Skip an anchor only when the artifact is unambiguous.** If PRD frontmatter or Success Criteria _literally states_ the value (e.g., `timeline_budget: "1 week to ship"` plus "we need to launch before X" → `main_goal: speed`), skip that question and announce the skip with the chosen value and the quote that locks it. Never skip when any plausible alternative exists — the user's confirmation on a real choice is worth more than the seconds saved. In practice you will usually ask 2-3 questions; you may ask fewer, but NEVER more than 3.
 
 **5c. Run the interview — one structured question per anchor, in order.**
 
 For each non-skipped anchor — `main_goal`, then `north_star`, then `top_blocker` — use the selected interactive-question tool. Each question is its own call (sequential, not batched). Format:
 
-Ask the user: "<plain-language anchor question, in the user's language>"
-Options:
-- <Recommend value> (Recommended)
-  Description: <One-line why, with the artifact quote/pointer that grounds the Recommend.>
-- <Alternative A value>
-  Description: Reasonable when <one-line condition the artifacts partially support>; you'd pick this when <sequencing/scope consequence>.
-- <Alternative B value>
-  Description: Reasonable when <one-line condition>; you'd pick this when <consequence>.
-- Something else — I'll explain
-  Description: Free-form. Name the value and the reason; I'll record both and sequence accordingly.
+Ask the user:
+
+- question: "<plain-language anchor question, in the user's language>"
+  header: "<short header — e.g., Cel | Gwiazda | Główne ryzyko / Goal | North star | Blocker>"
+  options:
+  - label: "<Recommend value> (Recommended)"
+    description: "<One-line why, with the artifact quote/pointer that grounds the Recommend.>"
+  - label: "<Alternative A value>"
+    description: "Reasonable when <one-line condition the artifacts partially support>; you'd pick this when <sequencing/scope consequence>."
+  - label: "<Alternative B value>"
+    description: "Reasonable when <one-line condition>; you'd pick this when <consequence>."
+  - label: "Something else — I'll explain"
+    description: "Free-form. Name the value and the reason; I'll record both and sequence accordingly."
+    multiSelect: false
 
 Rules for the options block:
+
 - **The Recommend is always option 1**, with the "(Recommended)" suffix on the label.
 - **Each alternative carries its own "why reasonable" clause** tied to artifact signal — not "alternative: quality" but "alternative: quality — reasonable when launch correctness matters more than first-user signal". An alternative without one is a strawman; remove it.
 - **At most 2 alternatives** plus the free-form fallback (2-4 options total). Longer lists fatigue the user without adding signal.
@@ -291,8 +308,8 @@ A "custom MVP shape" is a product that doesn't map onto a familiar pattern: not 
 
 When the PRD looks custom-shaped:
 
-1. **Open the interview by disclosing it** in the message preceding the first anchor question: *"This PRD doesn't fit a familiar MVP pattern (no SaaS dashboard / CRUD / content / AI-wrapper shape). My Recommends for the next 2-3 questions are weaker than usual — push back hard if my read is off."*
-2. **Soften the Recommend on `north_star` and any derived investment area.** Phrase the Recommend description as *"My best read is X, but the artifact signal is thin"* rather than *"PRD §Vision says X"*.
+1. **Open the interview by disclosing it** in the message preceding the first anchor question: _"This PRD doesn't fit a familiar MVP pattern (no SaaS dashboard / CRUD / content / AI-wrapper shape). My Recommends for the next 2-3 questions are weaker than usual — push back hard if my read is off."_
+2. **Soften the Recommend on `north_star` and any derived investment area.** Phrase the Recommend description as _"My best read is X, but the artifact signal is thin"_ rather than _"PRD §Vision says X"_.
 3. **Allow up to two follow-up exchanges** on top of the three anchor questions. Custom MVPs reward dialogue; the user's design intuition is doing more work than artifacts can. Follow-ups are free-form text, not new structured questions.
 
 This is the one path where the skill leans into dialogue rather than away from it — and the only path that allows follow-ups. Total ceiling under this exception: 3 anchors + 2 follow-ups = 5 exchanges; outside it, 3 anchor questions, no follow-ups, one synthesis recap.
@@ -300,8 +317,8 @@ This is the one path where the skill leans into dialogue rather than away from i
 **5g. Phrasing and language guardrails (apply to every anchor question and the recap).**
 
 - **Mirror the user's language end-to-end.** Polish PRD → Polish questions, options, and recap. Translate section names (`Open Questions` → `Otwarte pytania`, `Functional Requirements` → `Wymagania funkcjonalne`, `Non-Goals` → `Poza zakresem`, `Success Criteria` → `Kryteria sukcesu`). No English fragments like "north star", "blocker", "must-have" inside a Polish question or option label — paraphrase ("gwiazda przewodnia", "główne ryzyko", "konieczne").
-- **Translate skill-internal jargon to plain product language.** *"Privacy posture"* → *"polityka prywatności dostawcy AI"*. *"North star"* → *"pierwsza historyjka, która udowadnia, że produkt działa"*. *"Blocking unknowns"* → *"pytania bez odpowiedzi, które blokują dalsze planowanie"*. A user should never need to open this skill's docs to parse a question.
-- **Quotes in option descriptions earn their place.** A citation like *"tech-stack wskazuje Astro + Supabase + OpenRouter"* is a name-dump unless the next clause says why it matters for *this* anchor. Either inline the implication or drop the quote.
+- **Translate skill-internal jargon to plain product language.** _"Privacy posture"_ → _"polityka prywatności dostawcy AI"_. _"North star"_ → _"pierwsza historyjka, która udowadnia, że produkt działa"_. _"Blocking unknowns"_ → _"pytania bez odpowiedzi, które blokują dalsze planowanie"_. A user should never need to open this skill's docs to parse a question.
+- **Quotes in option descriptions earn their place.** A citation like _"tech-stack wskazuje Astro + Supabase + OpenRouter"_ is a name-dump unless the next clause says why it matters for _this_ anchor. Either inline the implication or drop the quote.
 - **Recommend must be defensible, not aggressive.** A Recommend's one-liner is grounded in an artifact line, not in confident tone. If you can't point to the quote, downgrade — present the anchor with two alternatives of equal weight (and a free-form fallback), and let the user choose.
 
 ### Step 6: Decompose and sequence
@@ -390,17 +407,17 @@ Per-slice unknowns stay in the slice; cross-cutting ones live here.
 
 **6g. Generate `## Parked`.** Lift PRD's `## Non-Goals`. Also append anything Step 5 surfaced as deferred — particularly when the main goal is **speed to launch** or the #1 blocker is **time/capacity**, this section grows. Each entry: one-line item, one-line rationale.
 
-**6h. Derive `## Streams` (navigation aid).** Streams are a *derived view* over the dependency graph — they do NOT replace the topological order in `## Foundations` + `## Slices` and introduce no new IDs. Their job: give a reader the proposed reading order across parallel tracks in one screen. Derivation: one stream per foundation that anchors a distinct Prerequisites chain (`F-NN` → the slices listing it in Prerequisites, in dep order); a slice with no foundation prerequisite is its own one-item stream (never a "Misc" bucket); a slice depending on multiple streams' heads joins the most-derived one, with the join named in that stream's note ("joins Stream A at S-01") — never duplicated across streams. Emit one markdown-table row per stream — `Stream | Theme | Chain | Note` — Chain joining existing Roadmap IDs with `→`, Theme descriptive not promotional ("Review loop", not "The killer feature"), Note one clause tying the stream to `main_goal` or naming a join. Cap: 2-5 streams — more means the graph is over-segmented (fold single-slice streams into an adjacent foundation's stream); fewer than 2 means the topological order already reads cleanly, so omit the section. Streams are NOT canonical: on any conflict, the topological order wins and the stream definition is wrong.
+**6h. Derive `## Streams` (navigation aid).** Streams are a _derived view_ over the dependency graph — they do NOT replace the topological order in `## Foundations` + `## Slices` and introduce no new IDs. Their job: give a reader the proposed reading order across parallel tracks in one screen. Derivation: one stream per foundation that anchors a distinct Prerequisites chain (`F-NN` → the slices listing it in Prerequisites, in dep order); a slice with no foundation prerequisite is its own one-item stream (never a "Misc" bucket); a slice depending on multiple streams' heads joins the most-derived one, with the join named in that stream's note ("joins Stream A at S-01") — never duplicated across streams. Emit one markdown-table row per stream — `Stream | Theme | Chain | Note` — Chain joining existing Roadmap IDs with `→`, Theme descriptive not promotional ("Review loop", not "The killer feature"), Note one clause tying the stream to `main_goal` or naming a join. Cap: 2-5 streams — more means the graph is over-segmented (fold single-slice streams into an adjacent foundation's stream); fewer than 2 means the topological order already reads cleanly, so omit the section. Streams are NOT canonical: on any conflict, the topological order wins and the stream definition is wrong.
 
 ### Step 7: Emit roadmap content
 
 Use this exact template (section names are the contract; downstream tooling and `/10x-plan` may grep for them):
 
-````markdown
+```markdown
 ---
 project: <from PRD frontmatter>
 version: 1
-status: draft                    # draft | active | locked
+status: draft # draft | active | locked
 created: <YYYY-MM-DD>
 updated: <YYYY-MM-DD>
 prd_version: <int from PRD frontmatter, or `—` for non-PRD sources>
@@ -408,7 +425,7 @@ main_goal: <market-feedback | quality | low-complexity | speed | learn | other>
 top_blocker: <skills | capacity | time | decisions | external | motivation | none>
 milestone_id: <kebab-case, outcome-oriented — e.g. first-usable-deck>
 milestone_seq: <int, 1 for the first milestone>
-milestone_status: open           # open | done
+milestone_status: open # open | done
 ---
 
 # Roadmap: <Project>
@@ -427,7 +444,7 @@ milestone_status: open           # open | done
 - **Scope anchors:** <PRD IDs this milestone draws from (FR-NNN, US-NN ranges) — or, for description-sourced milestones, numbered `MS-NN` items distilled verbatim from the user's description:>
   - MS-01: <one scope statement>
   - MS-02: <…>
-  (Omit the MS list entirely when the source is a PRD or other document.)
+    (Omit the MS list entirely when the source is a PRD or other document.)
 
 ## Vision recap
 
@@ -455,23 +472,23 @@ be able to read the section cold.>
 
 ## At a glance
 
-| ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
-|---|---|---|---|---|---|
-| F-01 | <kebab-case-change-id> | (foundation) <foundation outcome> | — | NFR-XX | proposed |
-| F-02 | <kebab-case-change-id> | (foundation) <foundation outcome> | F-01 | NFR-YY | proposed |
-| S-01 | <kebab-case-change-id> | <user-can outcome> | F-01 | US-01, FR-001 | ready |
-| S-02 | <kebab-case-change-id> | <user-can outcome> | S-01 | US-02, FR-003 | proposed |
-| S-03 | <kebab-case-change-id> | <user-can outcome> | S-01, F-02 | US-03, FR-005 | blocked |
+| ID   | Change ID              | Outcome (user can …)              | Prerequisites | PRD refs      | Status   |
+| ---- | ---------------------- | --------------------------------- | ------------- | ------------- | -------- |
+| F-01 | <kebab-case-change-id> | (foundation) <foundation outcome> | —             | NFR-XX        | proposed |
+| F-02 | <kebab-case-change-id> | (foundation) <foundation outcome> | F-01          | NFR-YY        | proposed |
+| S-01 | <kebab-case-change-id> | <user-can outcome>                | F-01          | US-01, FR-001 | ready    |
+| S-02 | <kebab-case-change-id> | <user-can outcome>                | S-01          | US-02, FR-003 | proposed |
+| S-03 | <kebab-case-change-id> | <user-can outcome>                | S-01, F-02    | US-03, FR-005 | blocked  |
 
 ## Streams
 
 Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme | Chain | Note |
-|---|---|---|---|
-| A | <Theme> | `F-01` → `S-01` → `S-02` | <One-line rationale tying the stream to main_goal.> |
-| B | <Theme> | `F-02` → `S-03` | <Joins Stream A at `S-NN` if applicable, else standalone.> |
-| C | <Theme> | `S-NN` | <Standalone slice with no foundation prerequisite.> |
+| Stream | Theme   | Chain                    | Note                                                       |
+| ------ | ------- | ------------------------ | ---------------------------------------------------------- |
+| A      | <Theme> | `F-01` → `S-01` → `S-02` | <One-line rationale tying the stream to main_goal.>        |
+| B      | <Theme> | `F-02` → `S-03`          | <Joins Stream A at `S-NN` if applicable, else standalone.> |
+| C      | <Theme> | `S-NN`                   | <Standalone slice with no foundation prerequisite.>        |
 
 (2–5 streams; every `F-NN` and `S-NN` appears in exactly one stream. Omit this section entirely if the dep graph is too small for streams to add value — see Step 6h.)
 
@@ -524,10 +541,10 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID | Suggested issue title | Ready for `/10x-plan` | Notes |
-|---|---|---|---|---|
-| F-01 | <kebab-case-change-id> | <issue title for Jira/Linear> | no | <why or `—`> |
-| S-01 | <kebab-case-change-id> | <issue title for Jira/Linear> | yes | Run `/10x-plan <change-id>` |
+| Roadmap ID | Change ID              | Suggested issue title         | Ready for `/10x-plan` | Notes                       |
+| ---------- | ---------------------- | ----------------------------- | --------------------- | --------------------------- |
+| F-01       | <kebab-case-change-id> | <issue title for Jira/Linear> | no                    | <why or `—`>                |
+| S-01       | <kebab-case-change-id> | <issue title for Jira/Linear> | yes                   | Run `/10x-plan <change-id>` |
 
 This table is the clean handoff to Jira/Linear or any MCP-backed backlog. Include one row for every `F-NN` and `S-NN`. It should be compact enough to copy into issues, but it must not duplicate the detailed roadmap body.
 
@@ -554,17 +571,17 @@ This table is the clean handoff to Jira/Linear or any MCP-backed backlog. Includ
 (Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches the item is archived. Do NOT pre-populate. Format:)
 
 - **<Slice ID>: <Outcome>** — Archived <YYYY-MM-DD> → `context/archive/<YYYY-MM-DD-change-id>/`. Lesson: <pointer to lessons.md if any, or `—`>.
-````
+```
 
 **Field semantics, in detail:**
 
-- **Outcome** is verb-led. Slices: *"user can sign in and see an empty fridge"*. Foundations: *"(foundation) auth scaffold landed; tokens issued via configured provider"*. Never a noun phrase ("authentication system"); always a state-of-the-world declarative.
+- **Outcome** is verb-led. Slices: _"user can sign in and see an empty fridge"_. Foundations: _"(foundation) auth scaffold landed; tokens issued via configured provider"_. Never a noun phrase ("authentication system"); always a state-of-the-world declarative.
 - **Change ID** is kebab-case, stable, and suitable for `context/changes/<change-id>/`. Do not use `F-01` / `S-01` as the change id; those are roadmap-local order IDs.
 - **Unlocks** appears only on Foundations. It names the downstream reason this Foundation exists: specific `S-NN` slices, blocking unknowns, or verification paths. A Foundation without Unlocks is horizontal drift.
-- **PRD refs** uses the literal IDs from PRD (`FR-001`, `US-01`, `NFR-02`). Don't paraphrase. Every must-have FR in PRD must appear in at least one slice's `PRD refs` after Step 8 self-review.
+- **PRD refs** uses the literal IDs from PRD (`FR-001`, `US-01`, `NFR-02`). Don't paraphrase. Every must-have FR in PRD must appear in at least one slice's PRD refs after Step 8 self-review.
 - **Prerequisites** mixes slice IDs (`S-01`, `F-02`) and external state, comma-separated. External state is plain English ("seeded ingredient table", "design tokens published"). One field, not split.
 - **Parallel with** is informational. Computed from the dep graph: any slice X where my Prerequisites and X's Prerequisites have no path between them. Empty = `—`.
-- **Blockers** is *external pending* only (vendor, design, stakeholder decision). Things the team can't unilaterally resolve. If the team CAN resolve it, it's an Unknown, not a Blocker.
+- **Blockers** is _external pending_ only (vendor, design, stakeholder decision). Things the team can't unilaterally resolve. If the team CAN resolve it, it's an Unknown, not a Blocker.
 - **Unknowns** is questions to research. Each carries Owner and Block flag. Block=yes promotes the slice's Status to `blocked`.
 - **Risk** is one line: why sequenced here, what could go wrong, why this is the safer order than alternatives. Not a postmortem. Not catastrophizing. Just the load-bearing reason a future reader needs to understand the sequence.
 - **Status** lifecycle: `proposed` (default on first generation) | `ready` (Prerequisites all met, no blocking unknowns — `/10x-plan` can run) | `planning` | `in-progress` | `done` | `blocked` (one or more unknowns with `Block: yes`). This skill emits only `proposed`, `ready`, and `blocked` on generation; the rest are written downstream (see "Relationship to other skills"), best-effort and forward-only.
@@ -621,16 +638,18 @@ test -f context/foundation/roadmap.md
 
 If the file does not exist, write to `context/foundation/roadmap.md` and proceed to Step 10.
 
-If the file exists, the foundation-doc convention is **edit-in-place** for incremental refinement, **archive-then-replace** for full regeneration. This skill produces a *full* roadmap from PRD; surgical refinement is out of scope. So default to archive-then-replace, but ask with the selected interactive-question tool:
+If the file exists, the foundation-doc convention is **edit-in-place** for incremental refinement, **archive-then-replace** for full regeneration. This skill produces a _full_ roadmap from PRD; surgical refinement is out of scope. So default to archive-then-replace, but ask the user:
 
-Ask the user: "context/foundation/roadmap.md already exists. How would you like to proceed?"
-Options:
-- Archive and replace (Recommended)
-  Description: Move existing to context/foundation/archive/<today>-roadmap.md, then write the new roadmap. History preserved per foundation README convention.
-- Overwrite without archiving
-  Description: Replace in place. Existing content is lost (unless you've committed it). Use only if the existing roadmap is empty or scratch.
-- Cancel
-  Description: Exit without writes. No collision resolution.
+- question: "context/foundation/roadmap.md already exists. How would you like to proceed?"
+  header: "Collision"
+  options:
+  - label: "Archive and replace (Recommended)"
+    description: "Move existing to context/foundation/archive/<today>-roadmap.md, then write the new roadmap. History preserved per foundation README convention."
+  - label: "Overwrite without archiving"
+    description: "Replace in place. Existing content is lost (unless you've committed it). Use only if the existing roadmap is empty or scratch."
+  - label: "Cancel"
+    description: "Exit without writes. No collision resolution."
+    multiSelect: false
 
 On "Archive and replace": create `context/foundation/archive/` if missing, move the existing file to `context/foundation/archive/<today>-roadmap-<milestone_id>.md` (today's date in `YYYY-MM-DD`; drop the `-<milestone_id>` suffix for legacy files without one), then write the new content. If a file already exists at that archive path (regenerated twice in one day), append `-2`, `-3`, etc.
 
@@ -712,7 +731,7 @@ STOP. Do not chain into another skill automatically — the user picks when to p
 
 1. **Source materials are the source.** Every slice traces to a source-anchor ID — PRD IDs (`FR-NNN`/`US-NN`) for PRD-sourced milestones, `MS-NN` charter anchors for description-sourced ones. Step 5's framing surfaces goal/north-star/investment/blocker context inferred from the sources; the baseline surfaces what already exists; neither grows the sources. Roadmap items without a source trace are a self-review failure.
 
-2. **Vertical slices first.** A slice delivers user-visible capability end-to-end. Horizontal slices ("the API layer", "the schema") are the anti-pattern this skill exists to prevent. Foundations are the *only* exception — they are explicitly cross-cutting enablers, live in their own section, carry `Unlocks`, and are marked `(foundation)` so no reader confuses them with user-facing work.
+2. **Vertical slices first.** A slice delivers user-visible capability end-to-end. Horizontal slices ("the API layer", "the schema") are the anti-pattern this skill exists to prevent. Foundations are the _only_ exception — they are explicitly cross-cutting enablers, live in their own section, carry `Unlocks`, and are marked `(foundation)` so no reader confuses them with user-facing work.
 
 3. **Balanced granularity without estimates.** Slices do not get size labels, but their scope still has to be comparable. A roadmap where `S-01` contains nearly the whole PRD and `S-02`/`S-03` are minor leftovers is a bad roadmap. Split oversized items by narrower user-visible outcomes, workflow phases, personas, or risk boundaries — never by technical layer.
 

@@ -83,3 +83,40 @@ export async function cleanupIsolationFixtures(asA: AuthedFetch, fixture: Isolat
   await asA(`/api/employees/${fixture.employeeId}`, { method: "DELETE" });
   await asA(`/api/teams/${fixture.teamId}`, { method: "DELETE" });
 }
+
+export interface StampAttackFixture {
+  employeeId: string;
+  taskId: string;
+  employeeName: string;
+  taskTitle: string;
+}
+
+export async function createStampAttackFixtures(asB: AuthedFetch): Promise<StampAttackFixture> {
+  const runId = crypto.randomUUID().slice(0, 8);
+  const employeeName = `iso-${runId}-b-person`;
+  const taskTitle = `iso-${runId}-b-task`;
+
+  const employee = await jsonAs(
+    asB,
+    "/api/employees",
+    jsonInit("POST", { name: employeeName, role: "isolation", teamId: null }),
+  );
+  if (employee.status !== 201) {
+    throw new Error(
+      `Failed to create stamp-attack employee (${String(employee.status)}): ${JSON.stringify(employee.body)}`,
+    );
+  }
+  const employeeId = entityId(employee.body, "employee");
+
+  const task = await jsonAs(asB, "/api/tasks", jsonInit("POST", { employeeId, title: taskTitle }));
+  if (task.status !== 201) {
+    throw new Error(`Failed to create stamp-attack task (${String(task.status)}): ${JSON.stringify(task.body)}`);
+  }
+  const taskId = entityId(task.body, "task");
+
+  return { employeeId, taskId, employeeName, taskTitle };
+}
+
+export async function cleanupStampAttackFixtures(asB: AuthedFetch, fixture: StampAttackFixture): Promise<void> {
+  await asB(`/api/employees/${fixture.employeeId}`, { method: "DELETE" });
+}
