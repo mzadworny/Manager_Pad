@@ -1,10 +1,10 @@
 ---
 change_id: isolation-high-signal-writes
 title: High-signal cross-manager write proofs
-status: impl_reviewed
+status: archived
 created: 2026-09-07
 updated: 2026-09-07
-archived_at: null
+archived_at: 2026-09-07T19:00:06Z
 ---
 
 ## Notes
