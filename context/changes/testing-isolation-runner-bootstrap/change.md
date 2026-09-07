@@ -3,7 +3,7 @@ change_id: testing-isolation-runner-bootstrap
 title: Isolation + runner bootstrap
 status: implemented
 created: 2026-08-31
-updated: 2026-09-02
+updated: 2026-09-07
 archived_at: null
 ---
 
