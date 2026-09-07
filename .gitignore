@@ -32,3 +32,4 @@ pnpm-debug.log*
 # tests
 coverage/
 .vitest/
+.playwright-cli/
