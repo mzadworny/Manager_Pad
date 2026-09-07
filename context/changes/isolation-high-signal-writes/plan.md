@@ -201,10 +201,10 @@ No schema. Cloud data: A’s unique fixtures as today, plus B’s unique person 
 
 #### Automated
 
-- [x] 2.1 `context/foundation/test-plan.md` §6.2 names create-on-foreign-`employeeId` and own-row + foreign stamp
-- [x] 2.2 `npm test` still passes after doc-only edits
-- [x] 2.3 Prettier on the touched markdown (`npm run format` scoped to that file, or the repo format command already used for markdown)
+- [x] 2.1 `context/foundation/test-plan.md` §6.2 names create-on-foreign-`employeeId` and own-row + foreign stamp — d4fd06b
+- [x] 2.2 `npm test` still passes after doc-only edits — d4fd06b
+- [x] 2.3 Prettier on the touched markdown (`npm run format` scoped to that file, or the repo format command already used for markdown) — d4fd06b
 
 #### Manual
 
-- [x] 2.4 Reading §6.2 alone is enough to know why “PATCH A’s task with A’s meeting id” is the wrong F1 test and what to send instead
+- [x] 2.4 Reading §6.2 alone is enough to know why “PATCH A’s task with A’s meeting id” is the wrong F1 test and what to send instead — d4fd06b
