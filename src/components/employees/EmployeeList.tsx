@@ -46,7 +46,6 @@ export function EmployeeList({ teamId, countTeamId, teams, onCountChange, onEmpl
       onCountChange?.(countTeamId, payload.employees.length);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load employees");
-      onCountChange?.(countTeamId, 0);
     } finally {
       setIsLoading(false);
     }

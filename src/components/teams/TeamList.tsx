@@ -38,7 +38,8 @@ export function TeamList() {
   const loadEmployeeCount = useCallback(async (team: Team): Promise<number> => {
     const response = await fetch(employeesUrlForTeam(team));
     if (!response.ok) {
-      return 0;
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error ?? "Unable to load employee counts");
     }
     const payload = (await response.json()) as { employees: unknown[] };
     return payload.employees.length;
@@ -56,13 +57,19 @@ export function TeamList() {
   );
 
   const handleEmployeesMutated = useCallback(async () => {
-    await refreshEmployeeCounts(teams);
+    try {
+      await refreshEmployeeCounts(teams);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load employee counts");
+    }
   }, [refreshEmployeeCounts, teams]);
 
   const loadTeams = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
+    let nextTeams: Team[] = [];
     try {
       const response = await fetch("/api/teams");
       if (!response.ok) {
@@ -71,7 +78,7 @@ export function TeamList() {
       }
 
       const payload = (await response.json()) as { teams: Team[] };
-      const nextTeams = payload.teams;
+      nextTeams = payload.teams;
       setTeams(nextTeams);
 
       if (nextTeams.length === 0) {
@@ -87,15 +94,20 @@ export function TeamList() {
         const systemTeam = nextTeams.find((team) => team.isSystem);
         return systemTeam?.id ?? nextTeams[0].id;
       });
-
-      await refreshEmployeeCounts(nextTeams);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load teams");
       setTeams([]);
       setSelectedTeamId(null);
       setEmployeeCounts({});
+      return;
     } finally {
       setIsLoading(false);
+    }
+
+    try {
+      await refreshEmployeeCounts(nextTeams);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to load employee counts");
     }
   }, [refreshEmployeeCounts]);
 

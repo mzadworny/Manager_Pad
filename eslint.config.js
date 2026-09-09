@@ -69,7 +69,7 @@ const astroConfig = tseslint.config({
 });
 
 const testsConfig = tseslint.config({
-  files: ["tests/**/*.{ts,tsx}"],
+  files: ["tests/**/*.{ts,tsx}", "e2e/**/*.{ts,tsx}", "playwright.config.ts"],
   rules: {
     "react-compiler/react-compiler": "off",
   },

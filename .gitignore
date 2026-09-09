@@ -33,3 +33,10 @@ pnpm-debug.log*
 coverage/
 .vitest/
 .playwright-cli/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

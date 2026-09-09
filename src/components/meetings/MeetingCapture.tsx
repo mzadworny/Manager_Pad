@@ -92,10 +92,12 @@ export function MeetingCapture({ meetingId }: MeetingCaptureProps) {
           return;
         }
 
-        if (employeeResponse.ok) {
-          const employeePayload = (await employeeResponse.json()) as { employee: Employee };
-          setEmployee(employeePayload.employee);
+        if (!employeeResponse.ok) {
+          const payload = (await employeeResponse.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "Unable to load employee");
         }
+        const employeePayload = (await employeeResponse.json()) as { employee: Employee };
+        setEmployee(employeePayload.employee);
 
         if (!meetingsResponse.ok) {
           const payload = (await meetingsResponse.json().catch(() => null)) as { error?: string } | null;
